@@ -1,0 +1,443 @@
+{% extends 'base.html' %}
+{% block title %}Behavioural Cyber Deception Platform{% endblock %}
+{% block shell_class %}landing-shell{% endblock %}
+{% block content %}
+<section class="landing-hero" aria-label="Product introduction">
+  <div class="landing-hero-grid">
+    <div class="landing-hero-copy">
+      <div class="eyebrow"><span class="eyebrow-line"></span> NEXT-GENERATION THREAT DECEPTION</div>
+      <h1 class="landing-headline">Trust the <span class="gradient-text">behaviour.</span><br>Not just the password.</h1>
+      <p class="landing-lead">
+        HoneyShield evaluates real-time authentication timing, retry rhythms, and credential cadence. Suspicious sessions are quietly diverted into a synthetic decoy environment with canary assets—neutralizing threats while recording forensic evidence.
+      </p>
+      <div class="landing-badge-strip">
+        <span class="trust-badge"><span class="pulse-dot"></span> Adaptive deception layer</span>
+        <span class="trust-badge">Zero plaintext secrets</span>
+        <span class="trust-badge">Local SQLite audit store</span>
+      </div>
+      <div class="landing-cta-block">
+        <div class="landing-cta-group">
+          <a class="button button-primary button-large landing-cta-signin" href="{{ url_for('login') }}" id="heroSignInBtn" aria-describedby="heroSignInHelper">
+            <span class="cta-icon" aria-hidden="true">↗</span>
+            <span class="cta-label">Sign In to Workspace</span>
+            <span class="cta-arrow" aria-hidden="true">→</span>
+          </a>
+          <a class="button button-secondary button-large" href="{{ url_for('admin_dashboard') }}">
+            <span>⚡</span> Explore Control Room <span aria-hidden="true">→</span>
+          </a>
+          <a class="button button-quiet button-large" href="{{ url_for('scenario_lab') }}">
+            <span>⚗</span> Scenario Lab
+          </a>
+        </div>
+        <p class="cta-helper-line" id="heroSignInHelper">
+          <span class="cta-helper-icon" aria-hidden="true">ℹ</span> Sign in to access your normal workspace.
+        </p>
+      </div>
+      <p class="landing-disclaimer">
+        <span class="tiny-shield">⌑</span> Running locally in isolated demo mode · Evaluates behavioural signals deterministically without contacting third parties.
+      </p>
+    </div>
+
+    <div class="landing-hero-visual" aria-hidden="true">
+      <div class="shield-container">
+        <div class="shield-halo"></div>
+        <div class="shield-pulse-ring ring-1"></div>
+        <div class="shield-pulse-ring ring-2"></div>
+        <svg class="cyber-shield-svg" viewBox="0 0 240 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="shieldGrad" x1="20" y1="20" x2="220" y2="260" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#43D9D0" stop-opacity="0.8" />
+              <stop offset="50%" stop-color="#38BDF8" stop-opacity="0.3" />
+              <stop offset="100%" stop-color="#0B1020" stop-opacity="0.9" />
+            </linearGradient>
+            <linearGradient id="glowGrad" x1="120" y1="30" x2="120" y2="250" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#43D9D0" />
+              <stop offset="100%" stop-color="#818CF8" />
+            </linearGradient>
+            <filter id="shieldGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="6" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+          <!-- Outer Shield Path -->
+          <path d="M120 20 L205 55 C205 155 165 220 120 255 C75 220 35 155 35 55 Z" 
+                fill="url(#shieldGrad)" stroke="url(#glowGrad)" stroke-width="2.5" filter="url(#shieldGlow)" />
+          <!-- Inner Core Path -->
+          <path d="M120 45 L180 72 C180 145 150 195 120 225 C90 195 60 145 60 72 Z" 
+                fill="#121A2B" stroke="#43D9D0" stroke-width="1.5" stroke-dasharray="4 2" opacity="0.85" />
+          <!-- Center Emblem: Honeycomb Hexagon + Lock Core -->
+          <polygon points="120,85 145,100 145,130 120,145 95,130 95,100" 
+                   fill="#172338" stroke="#38BDF8" stroke-width="2" />
+          <circle cx="120" cy="115" r="8" fill="#43D9D0" />
+          <!-- Radar Scanning Line -->
+          <line class="radar-scan" x1="120" y1="115" x2="180" y2="72" stroke="#43D9D0" stroke-width="2" opacity="0.75" />
+          <!-- Interactive Nodes -->
+          <circle cx="85" cy="165" r="4" fill="#34D399" />
+          <circle cx="155" cy="165" r="4" fill="#F87171" />
+          <circle cx="120" cy="190" r="5" fill="#FBBF24" />
+        </svg>
+        <div class="hero-chip chip-left">
+          <span class="chip-dot dot-cyan"></span>
+          <div><strong>0.02s</strong><small>Evaluation latency</small></div>
+        </div>
+        <div class="hero-chip chip-right">
+          <span class="chip-dot dot-green"></span>
+          <div><strong>Zero Leakage</strong><small>Passwords hashed</small></div>
+        </div>
+        <div class="hero-chip chip-bottom">
+          <span class="chip-dot dot-red"></span>
+          <div><strong>Silent Trap</strong><small>Contained in decoy</small></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Interactive Demonstration: Same Login, Two Realities -->
+<section class="landing-realities panel" id="two-realities-demo" aria-label="Interactive Demonstration: Same Login, Two Realities">
+  <div class="section-title-wrap">
+    <div class="eyebrow"><span class="eyebrow-line"></span> INTERACTIVE DEMONSTRATION</div>
+    <h2>Same Login. Two Realities.</h2>
+    <p class="lead-sm">Compare how HoneyShield evaluates behavioural evidence in real-time, routing legitimate users to work while quietly diverting adversaries into a synthetic decoy trap.</p>
+  </div>
+
+  <div class="realities-mode-toggle" role="tablist" aria-label="Demonstration View Selector">
+    <button type="button" class="realities-tab-btn active" id="btnRealityBoth" role="tab" aria-selected="true" data-mode="both">
+      <span>⧉</span> Side-by-Side Comparison
+    </button>
+    <button type="button" class="realities-tab-btn" id="btnRealityNormal" role="tab" aria-selected="false" data-mode="normal">
+      <span>✓</span> Legitimate User Reality
+    </button>
+    <button type="button" class="realities-tab-btn" id="btnRealityAttacker" role="tab" aria-selected="false" data-mode="attacker">
+      <span>▲</span> Suspicious Attacker Reality
+    </button>
+  </div>
+
+  <div class="realities-comparison-grid" id="realitiesGrid">
+    <!-- Reality 1: Legitimate User -->
+    <article class="reality-card reality-legitimate card-surface" id="realityCardLegit">
+      <div class="reality-header">
+        <div class="reality-badge-row">
+          <span class="status-chip status-safe">✓ Legitimate Session</span>
+          <span class="risk-badge risk-badge-low">LOW · 0 / 100</span>
+        </div>
+        <h3>The Legitimate Employee</h3>
+        <p class="reality-desc">Single human sign-in attempt with verified credentials. Natural timing intervals without automated retry cadence.</p>
+      </div>
+
+      <div class="reality-body">
+        <div class="evidence-box">
+          <div class="evidence-label">Observed Behavioural Evidence:</div>
+          <ul class="evidence-list">
+            <li><span class="ev-bullet dot-cyan"></span> 1 sign-in attempt with correct password</li>
+            <li><span class="ev-bullet dot-cyan"></span> Inter-attempt interval: N/A (first submission)</li>
+            <li><span class="ev-bullet dot-cyan"></span> Cadence variance: Natural human typing</li>
+            <li><span class="ev-bullet dot-cyan"></span> Targeted principal: Single legitimate identity</li>
+          </ul>
+        </div>
+
+        <div class="policy-eval-box">
+          <div class="eval-stat">
+            <small>Heuristic Risk Score</small>
+            <strong>0 <span class="muted">/ 100</span></strong>
+          </div>
+          <div class="eval-stat">
+            <small>Active Policy Threshold</small>
+            <strong>50 <span class="muted">/ 100</span></strong>
+          </div>
+          <div class="eval-stat">
+            <small>Enforcement Decision</small>
+            <strong class="text-cyan">ALLOW (Workspace)</strong>
+          </div>
+        </div>
+
+        <div class="reality-outcome outcome-safe">
+          <div class="outcome-icon">✓</div>
+          <div>
+            <strong>Genuine Enterprise Workspace</strong>
+            <p>Access granted instantly without MFA friction or false positive lockouts.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reality-footer">
+        <a class="button button-primary button-small" href="{{ url_for('login') }}">Test Real Sign-In ↗</a>
+        <small class="muted">Use <code>demo</code> / <code>ShieldDemo!2026</code></small>
+      </div>
+    </article>
+
+    <!-- Reality 2: Suspicious Attacker -->
+    <article class="reality-card reality-attacker card-surface" id="realityCardAttacker">
+      <div class="reality-header">
+        <div class="reality-badge-row">
+          <span class="status-chip status-danger">▲ Credential Attack</span>
+          <span class="risk-badge risk-badge-high">HIGH · 70 / 100</span>
+        </div>
+        <h3>The Automated Adversary</h3>
+        <p class="reality-desc">Rapid retry burst with regular automated cadence targeting enterprise credentials. System triggers containment.</p>
+      </div>
+
+      <div class="reality-body">
+        <div class="evidence-box">
+          <div class="evidence-label">Observed Behavioural Evidence:</div>
+          <ul class="evidence-list">
+            <li><span class="ev-bullet dot-amber"></span> 3 consecutive failed logins in 4.2 seconds (+30)</li>
+            <li><span class="ev-bullet dot-amber"></span> Automated retry interval: 1.4s cadence (+20)</li>
+            <li><span class="ev-bullet dot-amber"></span> Targeted principal: 3x attempts against same ID (+20)</li>
+            <li><span class="ev-bullet dot-amber"></span> Zero password plaintext stored (scrypt hash check)</li>
+          </ul>
+        </div>
+
+        <div class="policy-eval-box">
+          <div class="eval-stat">
+            <small>Heuristic Risk Score</small>
+            <strong class="text-red">70 <span class="muted">/ 100</span></strong>
+          </div>
+          <div class="eval-stat">
+            <small>Active Policy Threshold</small>
+            <strong>50 <span class="muted">/ 100</span></strong>
+          </div>
+          <div class="eval-stat">
+            <small>Enforcement Decision</small>
+            <strong class="text-red">CONTAIN (Decoy)</strong>
+          </div>
+        </div>
+
+        <div class="reality-outcome outcome-decoy">
+          <div class="outcome-icon">⌑</div>
+          <div>
+            <strong>Synthetic Decoy Environment</strong>
+            <p>Silent diversion. Attacker interacts with bait canary assets while SOC collects forensics.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reality-footer">
+        <a class="button button-danger button-small" href="{{ url_for('scenario_lab') }}">Run Attack in Scenario Lab ↗</a>
+        <small class="muted">Deterministic benchmark simulation</small>
+      </div>
+    </article>
+  </div>
+
+  <div class="realities-disclaimer">
+    <span class="info-icon">ℹ</span>
+    <span>Demonstration Notice: Illustrates policy outcomes. Simulated scenarios are isolated and distinctly labeled from live browser logins.</span>
+  </div>
+</section>
+
+<!-- Feature Highlights: 4 Visually Distinct Sections -->
+<section class="landing-features" aria-label="Platform capabilities">
+  <div class="section-title-wrap">
+    <div class="eyebrow"><span class="eyebrow-line"></span> CORE ARCHITECTURE</div>
+    <h2>Engineered for proactive defense & forensic attribution</h2>
+    <p class="lead-sm">Four tightly coupled pillars combine behavioural telemetry with active cyber deception.</p>
+  </div>
+
+  <div class="feature-grid">
+    <div class="feature-card card-surface">
+      <div class="feature-card-header">
+        <span class="feature-badge badge-cyan">01</span>
+        <span class="feature-card-icon icon-cyan">↗</span>
+      </div>
+      <h3>Adaptive Risk Scoring</h3>
+      <p>Computes continuous 0–100 risk assessments across 7 explainable signals: rapid retry bursts, inter-keystroke cadence, username diversity, and timing anomalies. Heuristics adapt per session without external dependencies.</p>
+      <div class="feature-card-footer">
+        <span class="tag-pill">Cadence Analysis</span>
+        <span class="tag-pill">Burst Detection</span>
+      </div>
+    </div>
+
+    <div class="feature-card card-surface">
+      <div class="feature-card-header">
+        <span class="feature-badge badge-violet">02</span>
+        <span class="feature-card-icon icon-violet">⌁</span>
+      </div>
+      <h3>Evidence-Led Investigation</h3>
+      <p>Immutable audit timelines record exact UTC timestamps, request intervals, and pseudonymized HMAC principal fingerprints. Operators inspect complete attack-path sequences and export evidence in one click.</p>
+      <div class="feature-card-footer">
+        <span class="tag-pill">JSON / CSV Export</span>
+        <span class="tag-pill">Attack-Path Replay</span>
+      </div>
+    </div>
+
+    <div class="feature-card card-surface">
+      <div class="feature-card-header">
+        <span class="feature-badge badge-amber">03</span>
+        <span class="feature-card-icon icon-amber">⌑</span>
+      </div>
+      <h3>Synthetic Decoy Environment</h3>
+      <p>When sessions exceed the high-risk policy threshold, they are silently contained in a synthetic workspace rather than blocked. Attackers interact with bait documents and canary tokens while generating forensic intelligence.</p>
+      <div class="feature-card-footer">
+        <span class="tag-pill">Canary Tokens</span>
+        <span class="tag-pill">Silent Containment</span>
+      </div>
+    </div>
+
+    <div class="feature-card card-surface">
+      <div class="feature-card-header">
+        <span class="feature-badge badge-green">04</span>
+        <span class="feature-card-icon icon-green">⚗</span>
+      </div>
+      <h3>Scenario Lab & Policy Benchmark</h3>
+      <p>Run 8 deterministic threat simulations (brute force, credential sweep, human recovery, boundary cases) against the engine. The What-If Policy Analyzer calculates confusion matrices and false-positive rates instantly.</p>
+      <div class="feature-card-footer">
+        <span class="tag-pill">8 Benchmark Scenarios</span>
+        <span class="tag-pill">What-If Tuning</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works Sequence -->
+<section class="landing-workflow" aria-label="System workflow">
+  <div class="section-title-wrap">
+    <div class="eyebrow"><span class="eyebrow-line"></span> END-TO-END EXECUTION</div>
+    <h2>How HoneyShield mitigates credential attacks</h2>
+    <p class="lead-sm">A closed-loop pipeline from initial connection to forensic export.</p>
+  </div>
+
+  <div class="workflow-steps">
+    <div class="workflow-step">
+      <div class="step-indicator">
+        <span class="step-num">1</span>
+        <div class="step-connector"></div>
+      </div>
+      <div class="step-content card-surface">
+        <span class="step-tag">INGEST</span>
+        <h4>Observe Behaviour</h4>
+        <p>Captures sign-in timestamps, inter-attempt intervals, and hashed principal targets without touching password plaintext.</p>
+      </div>
+    </div>
+
+    <div class="workflow-step">
+      <div class="step-indicator">
+        <span class="step-num">2</span>
+        <div class="step-connector"></div>
+      </div>
+      <div class="step-content card-surface">
+        <span class="step-tag">EVALUATE</span>
+        <h4>Assess Evidence</h4>
+        <p>Pure scoring engine calculates signal weights (rapid failures +30, username diversity +20, cadence +20) yielding a 0–100 score.</p>
+      </div>
+    </div>
+
+    <div class="workflow-step">
+      <div class="step-indicator">
+        <span class="step-num">3</span>
+        <div class="step-connector"></div>
+      </div>
+      <div class="step-content card-surface">
+        <span class="step-tag">ENFORCE</span>
+        <h4>Enforce Configured Policy</h4>
+        <p>Low-risk sessions route to the genuine workspace; sessions crossing the threshold are seamlessly isolated in the decoy environment.</p>
+      </div>
+    </div>
+
+    <div class="workflow-step">
+      <div class="step-indicator">
+        <span class="step-num">4</span>
+        <div class="step-connector"></div>
+      </div>
+      <div class="step-content card-surface">
+        <span class="step-tag">AUDIT</span>
+        <h4>Record Events</h4>
+        <p>Appends tamper-evident, structured telemetry rows to local SQLite storage with session isolation and privacy protections.</p>
+      </div>
+    </div>
+
+    <div class="workflow-step">
+      <div class="step-indicator">
+        <span class="step-num">5</span>
+      </div>
+      <div class="step-content card-surface">
+        <span class="step-tag">RESOLVE</span>
+        <h4>Investigate & Export</h4>
+        <p>SOC analysts drill into event timelines, review attack paths, inspect canary interactions, and export JSON/CSV forensic packages.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Product Preview Section -->
+<section class="landing-preview" aria-label="Product UI preview">
+  <div class="section-title-wrap">
+    <div class="eyebrow"><span class="eyebrow-line"></span> SOC OPERATOR EXPERIENCE</div>
+    <h2>Unified control room with real backend telemetry</h2>
+    <p class="lead-sm">Click through to the live control room to observe active sessions and time-series telemetry.</p>
+  </div>
+
+  <div class="preview-card card-surface">
+    <div class="preview-chrome">
+      <div class="chrome-dots">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="chrome-url">honeyshield.local / admin</div>
+      <div class="chrome-actions">
+        <a class="button button-primary button-small" href="{{ url_for('admin_dashboard') }}">Open Live SOC Control Room ↗</a>
+      </div>
+    </div>
+    <div class="preview-content-grid">
+      <div class="preview-tile">
+        <div class="preview-tile-header">
+          <span class="status-dot"></span>
+          <strong>Time-Series Attempts</strong>
+        </div>
+        <p class="preview-tile-desc">Live chronological authentication attempts partitioned by success and failure.</p>
+        <div class="preview-mini-chart">
+          <div class="mini-bar-group">
+            <span class="bar-f" style="height: 35%;"></span>
+            <span class="bar-s" style="height: 60%;"></span>
+          </div>
+          <div class="mini-bar-group">
+            <span class="bar-f" style="height: 80%;"></span>
+            <span class="bar-s" style="height: 20%;"></span>
+          </div>
+          <div class="mini-bar-group">
+            <span class="bar-f" style="height: 100%;"></span>
+            <span class="bar-s" style="height: 0%;"></span>
+          </div>
+          <div class="mini-bar-group">
+            <span class="bar-f" style="height: 40%;"></span>
+            <span class="bar-s" style="height: 70%;"></span>
+          </div>
+        </div>
+      </div>
+      <div class="preview-tile">
+        <div class="preview-tile-header">
+          <span class="status-dot dot-amber"></span>
+          <strong>Risk Distribution & Bands</strong>
+        </div>
+        <p class="preview-tile-desc">Proportional classification across LOW, ELEVATED, and HIGH risk boundaries.</p>
+        <div class="preview-dist-bar">
+          <span class="dist-low" style="width: 50%;">LOW</span>
+          <span class="dist-elevated" style="width: 25%;">ELV</span>
+          <span class="dist-high" style="width: 25%;">HIGH</span>
+        </div>
+      </div>
+      <div class="preview-tile">
+        <div class="preview-tile-header">
+          <span class="status-dot dot-violet"></span>
+          <strong>Session Flight Recorder</strong>
+        </div>
+        <p class="preview-tile-desc">Full explainable signal decomposition, attack-path visualization, and one-click JSON/CSV exports.</p>
+        <div class="preview-actions-row">
+          <a class="button button-secondary button-small" href="{{ url_for('admin_dashboard') }}">Inspect Stored Sessions ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Quick Navigation Action Banner -->
+<section class="landing-banner card-surface" aria-label="Demo entry points">
+  <div class="banner-copy">
+    <h3>Ready to test HoneyShield?</h3>
+    <p>Sign in using the demo account, simulate attacks in the Scenario Lab, or inspect live control room metrics.</p>
+  </div>
+  <div class="banner-buttons">
+    <a class="button button-primary" href="{{ url_for('login') }}">Sign In (demo / ShieldDemo!2026) →</a>
+    <a class="button button-secondary" href="{{ url_for('admin_dashboard') }}">Open SOC Control Room</a>
+    <a class="button button-quiet" href="{{ url_for('scenario_lab') }}">Run Scenario Lab</a>
+  </div>
+</section>
+{% endblock %}

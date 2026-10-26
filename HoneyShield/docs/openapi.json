@@ -1,0 +1,309 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "HoneyShield API",
+    "description": "API contract for HoneyShield local behavioural honeypot prototype.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:5000",
+      "description": "Local test server"
+    }
+  ],
+  "paths": {
+    "/healthz": {
+      "get": {
+        "summary": "Health and readiness probe",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Service is healthy and storage connected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "service", "storage"],
+                  "properties": {
+                    "status": { "type": "string", "example": "ok" },
+                    "service": { "type": "string", "example": "HoneyShield" },
+                    "storage": { "type": "string", "example": "sqlite" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/metrics": {
+      "get": {
+        "summary": "Observable metrics summary, risk distribution, and attempts time series",
+        "operationId": "getApiMetrics",
+        "responses": {
+          "200": {
+            "description": "Metrics summary and real SQLite telemetry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "summary", "risk_distribution", "attempts_over_time", "threshold", "policy_version"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/events": {
+      "get": {
+        "summary": "Paginated and filtered event telemetry feed",
+        "operationId": "getApiEvents",
+        "parameters": [
+          { "name": "band", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "session", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "type", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "simulated", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "default": 60 } },
+          { "name": "offset", "in": "query", "required": false, "schema": { "type": "integer", "default": 0 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Filtered events with opaque session references and safe reasons",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "total", "limit", "offset", "events"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/session/{session_key}": {
+      "get": {
+        "summary": "Session investigation detail with assessment and signal contributions",
+        "operationId": "getApiSessionDetail",
+        "parameters": [
+          { "name": "session_key", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session assessment, signal contributions, and ordered events"
+          },
+          "404": { "description": "Session not found" }
+        }
+      }
+    },
+    "/api/chart/attempts": {
+      "get": {
+        "summary": "Time-bucketed attempts history from real stored events",
+        "operationId": "getApiChartAttempts",
+        "parameters": [
+          { "name": "window", "in": "query", "required": false, "schema": { "type": "integer", "default": 3600 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attempts time series buckets"
+          }
+        }
+      }
+    },
+    "/login": {
+      "get": {
+        "summary": "Render login view",
+        "operationId": "getLogin",
+        "responses": {
+          "200": { "description": "HTML sign-in form" }
+        }
+      },
+      "post": {
+        "summary": "Authenticate user or record login failure event",
+        "operationId": "postLogin",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["username", "password"],
+                "properties": {
+                  "username": { "type": "string", "minLength": 1, "maxLength": 64 },
+                  "password": { "type": "string", "minLength": 1, "maxLength": 128 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "302": { "description": "Redirects to dashboard upon success or decoy if high-risk threshold reached" },
+          "400": { "description": "Missing, empty, or oversized input" },
+          "200": { "description": "Re-renders login page with failure warning" }
+        }
+      }
+    },
+    "/dashboard": {
+      "get": {
+        "summary": "Protected user workspace",
+        "operationId": "getUserDashboard",
+        "responses": {
+          "200": { "description": "HTML user workspace" },
+          "302": { "description": "Redirects to login if unauthenticated or decoy if high-risk" }
+        }
+      }
+    },
+    "/logout": {
+      "get": {
+        "summary": "Terminate current session",
+        "operationId": "getLogout",
+        "responses": {
+          "302": { "description": "Redirects to login" }
+        }
+      }
+    },
+    "/decoy": {
+      "get": {
+        "summary": "Monitored synthetic decoy console",
+        "operationId": "getDecoy",
+        "responses": {
+          "200": { "description": "HTML synthetic operations console" },
+          "302": { "description": "Redirects to login if session has not activated decoy" }
+        }
+      }
+    },
+    "/decoy/action": {
+      "post": {
+        "summary": "Record synthetic interaction in decoy console",
+        "operationId": "postDecoyAction",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["action"],
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": ["open_record", "open_report", "admin_resource", "export_report"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "302": { "description": "Redirects back to decoy with flash confirmation" },
+          "400": { "description": "Unsupported decoy action" },
+          "403": { "description": "Session does not have active decoy" }
+        }
+      }
+    },
+    "/admin": {
+      "get": {
+        "summary": "Administrative control room and telemetry stream",
+        "operationId": "getAdminDashboard",
+        "parameters": [
+          {
+            "name": "band",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["LOW", "ELEVATED", "HIGH"] }
+          },
+          {
+            "name": "session",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "maxLength": 32 }
+          }
+        ],
+        "responses": {
+          "200": { "description": "HTML admin control room" }
+        }
+      }
+    },
+    "/admin/simulate/{scenario}": {
+      "post": {
+        "summary": "Generate synthetic demo event scenario",
+        "operationId": "postAdminSimulate",
+        "parameters": [
+          {
+            "name": "scenario",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "enum": ["suspicious", "normal"] }
+          }
+        ],
+        "responses": {
+          "302": { "description": "Redirects to admin dashboard" },
+          "404": { "description": "Unknown simulation scenario" }
+        }
+      }
+    },
+    "/admin/reset": {
+      "post": {
+        "summary": "Wipe session and event history while preserving demo credentials",
+        "operationId": "postAdminReset",
+        "responses": {
+          "302": { "description": "Redirects to admin dashboard" }
+        }
+      }
+    },
+    "/admin/decoy/{session_key}": {
+      "get": {
+        "summary": "Admin view of a specific session's decoy console",
+        "operationId": "getAdminDecoy",
+        "parameters": [
+          {
+            "name": "session_key",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "HTML admin decoy view" },
+          "404": { "description": "Session does not exist or decoy not active" }
+        }
+      }
+    },
+    "/admin/decoy/{session_key}/action": {
+      "post": {
+        "summary": "Record synthetic action from admin decoy view",
+        "operationId": "postAdminDecoyAction",
+        "parameters": [
+          {
+            "name": "session_key",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["action"],
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": ["open_record", "open_report", "admin_resource", "export_report"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "302": { "description": "Redirects back to admin decoy view" },
+          "400": { "description": "Unsupported action" },
+          "404": { "description": "Session does not exist or decoy not active" }
+        }
+      }
+    }
+  }
+}

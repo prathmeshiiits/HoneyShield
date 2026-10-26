@@ -1,0 +1,569 @@
+{% extends 'base.html' %}
+{% block title %}Security control room{% endblock %}
+{% block content %}
+<div class="page-heading admin-heading">
+  <div>
+    <div class="eyebrow"><span class="eyebrow-line"></span> HONEYSHIELD / OBSERVABILITY</div>
+    <h1>Security <span>control room</span></h1>
+    <p class="lead-sm">Data-driven deception telemetry, dynamic risk scoring, and explainable signal attribution.</p>
+  </div>
+  <div class="heading-actions">
+    <a class="button button-secondary button-small" href="{{ url_for('login') }}"><span>↗</span> Test Sign-In</a>
+    <span class="status-chip status-live" id="freshnessBadge">
+      <span class="status-dot"></span>
+      <span id="freshnessText">Sync: On-Demand Refresh</span>
+    </span>
+    <button class="button button-secondary button-small" id="refreshMetricsBtn" type="button" aria-label="Refresh telemetry data">
+      <span class="refresh-spinner" id="refreshSpinner">↻</span> Refresh
+    </button>
+    <span class="status-chip status-muted">Threshold: {{ threshold }}/100</span>
+  </div>
+</div>
+
+<section class="scenario-console" id="scenario-console">
+  <div class="scenario-copy">
+    <span class="scenario-icon">⌁</span>
+    <div>
+      <strong>Run a live demonstration</strong>
+      <p>Each scenario writes events through the same backend store and risk scorer used by login.</p>
+    </div>
+  </div>
+  <div class="scenario-actions">
+    <a href="{{ url_for('scenario_lab') }}" class="button button-secondary"><span>⚗</span> Scenario Lab &amp; Benchmark ↗</a>
+    <form method="post" action="{{ url_for('simulate', scenario='suspicious') }}"><button type="submit" class="button button-danger"><span>⚑</span> Simulate suspicious session</button></form>
+    <form method="post" action="{{ url_for('simulate', scenario='normal') }}"><button type="submit" class="button button-primary"><span>✓</span> Simulate normal session</button></form>
+    <form method="post" action="{{ url_for('reset_demo') }}" data-confirm="Reset all demo sessions and event history? The demo account will be preserved."><button type="submit" class="button button-quiet"><span>↺</span> Reset demo</button></form>
+  </div>
+</section>
+
+<section class="metric-grid admin-metrics" aria-label="Observed demo totals">
+  <article class="metric-card clickable-kpi {% if not band_filter and not source_filter and (not time_filter or time_filter == 'all') and not session_filter %}is-active-kpi{% endif %}" data-kpi-filter="all" title="Click to view all sessions (clear filters)">
+    <div class="metric-top"><span>Total sessions</span><span class="metric-icon icon-cyan">◉</span></div>
+    <div class="metric-value" id="kpiSessions">{{ summary.sessions }}</div>
+    <div class="metric-caption">Browser + synthetic scenarios</div>
+  </article>
+  <article class="metric-card clickable-kpi" data-kpi-filter="attempts" title="Click to view attempts time-series">
+    <div class="metric-top"><span>Login attempts</span><span class="metric-icon icon-violet">◷</span></div>
+    <div class="metric-value" id="kpiAttempts">{{ summary.failed_attempts }} <span class="metric-subval muted">/ {{ summary.total_attempts }}</span></div>
+    <div class="metric-caption">Failed / total recorded attempts</div>
+  </article>
+  <article class="metric-card clickable-kpi {% if band_filter == 'ELEVATED' %}is-active-kpi{% endif %}" data-kpi-band="ELEVATED" title="Click to filter ELEVATED risk sessions (toggle)">
+    <div class="metric-top"><span>Elevated sessions</span><span class="metric-icon icon-amber">⌁</span></div>
+    <div class="metric-value text-amber" id="kpiElevated">{{ summary.elevated_sessions }}</div>
+    <div class="metric-caption">Score 35–{{ threshold - 1 if threshold > 35 else 35 }}</div>
+  </article>
+  <article class="metric-card clickable-kpi {% if band_filter == 'HIGH' %}is-active-kpi{% endif %}" data-kpi-band="HIGH" title="Click to filter HIGH risk sessions (toggle)">
+    <div class="metric-top"><span>High-risk sessions</span><span class="metric-icon icon-red">▲</span></div>
+    <div class="metric-value text-red" id="kpiHighRisk">{{ summary.high_sessions }}</div>
+    <div class="metric-caption">Score ≥ {{ threshold }} (contained)</div>
+  </article>
+  <article class="metric-card clickable-kpi {% if band_filter == 'HIGH' and summary.decoys > 0 %}is-active-kpi{% endif %}" data-kpi-band="HIGH" title="Click to filter decoy active sessions">
+    <div class="metric-top"><span>Decoy active</span><span class="metric-icon icon-red">⌑</span></div>
+    <div class="metric-value" id="kpiDecoys">{{ summary.decoys }}</div>
+    <div class="metric-caption">Threshold-triggered sessions</div>
+  </article>
+  <article class="metric-card clickable-kpi" id="kpiInteractionsCard" data-kpi-filter="interactions" title="Click to scroll to decoy telemetry and canary events">
+    <div class="metric-top"><span>Decoy interactions</span><span class="metric-icon icon-violet">↗</span></div>
+    <div class="metric-value" id="kpiInteractions">{{ summary.interactions }}</div>
+    <div class="metric-caption">Stored view / record / report actions</div>
+  </article>
+</section>
+
+<!-- Unified Shared SOC Control-Room Filter Bar -->
+<section class="panel soc-filter-panel" aria-label="Control room filters">
+  <form class="soc-filter-bar" id="socSharedFilterForm" method="get" action="{{ url_for('admin_dashboard') }}">
+    <div class="filter-group">
+      <span class="filter-label">Time window:</span>
+      <div class="chart-controls pill-group" role="group" aria-label="Time window selection">
+        <button type="button" class="chart-pill {% if time_filter == '5m' or time_filter == '300' %}active{% endif %}" data-window="300">5m</button>
+        <button type="button" class="chart-pill {% if time_filter == '15m' or time_filter == '900' %}active{% endif %}" data-window="900">15m</button>
+        <button type="button" class="chart-pill {% if time_filter == '1h' or time_filter == '3600' %}active{% endif %}" data-window="3600">1h</button>
+        <button type="button" class="chart-pill {% if time_filter == '24h' or time_filter == '86400' %}active{% endif %}" data-window="86400">24h</button>
+        <button type="button" class="chart-pill {% if time_filter == 'all' or not time_filter %}active{% endif %}" data-window="all">All</button>
+      </div>
+      <input type="hidden" name="time" id="sharedTimeFilter" value="{{ time_filter or 'all' }}">
+    </div>
+
+    <div class="filter-group">
+      <label for="sharedBandFilter" class="filter-label">Risk band:</label>
+      <select id="sharedBandFilter" name="band" class="filter-select">
+        <option value="" {% if not band_filter %}selected{% endif %}>All bands</option>
+        <option value="LOW" {% if band_filter == 'LOW' %}selected{% endif %}>Low (0–34)</option>
+        <option value="ELEVATED" {% if band_filter == 'ELEVATED' %}selected{% endif %}>Elevated (35–{{ threshold - 1 }})</option>
+        <option value="HIGH" {% if band_filter == 'HIGH' %}selected{% endif %}>High (≥ {{ threshold }})</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="sharedSourceFilter" class="filter-label">Event source:</label>
+      <select id="sharedSourceFilter" name="source" class="filter-select">
+        <option value="" {% if not source_filter %}selected{% endif %}>All sources</option>
+        <option value="browser" {% if source_filter == 'browser' %}selected{% endif %}>Browser (Live)</option>
+        <option value="simulation" {% if source_filter == 'simulation' %}selected{% endif %}>Simulation (Demo)</option>
+      </select>
+    </div>
+
+    <div class="filter-group filter-search-group">
+      <label for="sharedSessionFilter" class="filter-label">Session ID:</label>
+      <div class="search-input-wrap">
+        <input id="sharedSessionFilter" type="search" name="session" value="{{ session_filter }}" placeholder="Search session ID…" maxlength="32">
+        {% if session_filter %}
+        <a href="{{ url_for('admin_dashboard', time=time_filter, band=band_filter, source=source_filter) }}" class="clear-search-btn" aria-label="Clear session search">×</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="filter-actions">
+      <button class="button button-primary button-small" type="submit">Apply filters</button>
+      <a class="button button-secondary button-small" id="clearAllFiltersBtn" href="{{ url_for('admin_dashboard') }}">Clear filters</a>
+    </div>
+  </form>
+
+  {% if band_filter or session_filter or (source_filter and source_filter != 'all') or (time_filter and time_filter != 'all') %}
+  <div class="active-filters-chips" aria-label="Active filters">
+    <span class="active-filters-title">Active:</span>
+    {% if time_filter and time_filter != 'all' %}
+    <span class="filter-chip">Time: <strong>{{ time_filter }}</strong> <a href="{{ url_for('admin_dashboard', band=band_filter, source=source_filter, session=session_filter, time='all') }}" title="Remove time filter">×</a></span>
+    {% endif %}
+    {% if band_filter %}
+    <span class="filter-chip">Band: <strong>{{ band_filter }}</strong> <a href="{{ url_for('admin_dashboard', time=time_filter, source=source_filter, session=session_filter) }}" title="Remove band filter">×</a></span>
+    {% endif %}
+    {% if source_filter and source_filter != 'all' %}
+    <span class="filter-chip">Source: <strong>{{ source_filter|title }}</strong> <a href="{{ url_for('admin_dashboard', time=time_filter, band=band_filter, session=session_filter) }}" title="Remove source filter">×</a></span>
+    {% endif %}
+    {% if session_filter %}
+    <span class="filter-chip">Session: <code>{{ session_filter[:12] }}…</code> <a href="{{ url_for('admin_dashboard', time=time_filter, band=band_filter, source=source_filter) }}" title="Remove session search">×</a></span>
+    {% endif %}
+    <a href="{{ url_for('admin_dashboard') }}" class="clear-all-link">Reset all</a>
+  </div>
+  {% endif %}
+</section>
+
+<!-- Data-driven operational SOC charts -->
+<section class="soc-charts-grid" aria-label="Observability Visualizations">
+  <!-- Primary Chart: Authentication attempts over time -->
+  <article class="panel chart-card" id="attemptsChartCard">
+    <div class="panel-heading">
+      <div>
+        <h2>Authentication attempts over time</h2>
+        <p>Real chronological buckets: failed attempts (coral) vs. accepted logins (cyan)</p>
+      </div>
+      <div class="chart-controls">
+        <div class="pill-group" role="group" aria-label="Time window selection">
+          <button type="button" class="chart-pill" data-window="300" aria-pressed="false">5m</button>
+          <button type="button" class="chart-pill" data-window="900" aria-pressed="false">15m</button>
+          <button type="button" class="chart-pill active" data-window="3600" aria-pressed="true">1h</button>
+          <button type="button" class="chart-pill" data-window="all" aria-pressed="false">All</button>
+        </div>
+      </div>
+    </div>
+    <div class="chart-container" id="attemptsChartContainer">
+      <div id="attemptsChartLoading" class="chart-loading hidden" role="status" aria-live="polite">
+        <span class="spinner-ring"></span>
+        <span>Loading attempt telemetry...</span>
+      </div>
+      <div class="chart-svg-wrap">
+        <svg id="attemptsSvgChart" class="chart-svg" viewBox="0 0 680 190" role="img" aria-label="Login attempts time series visualization">
+          <!-- Dynamically populated or rendered via JS -->
+        </svg>
+      </div>
+      <div id="attemptsChartEmpty" class="chart-empty {% if attempts %}hidden{% endif %}">
+        <span>◷</span>
+        <strong>No authentication attempts recorded in this time window</strong>
+        <p>Login failures and accepted sign-ins will automatically generate real time-series buckets.</p>
+      </div>
+      <div id="attemptsChartError" class="chart-error hidden" role="alert">
+        <span class="error-icon">⚠</span>
+        <strong>Failed to load telemetry data</strong>
+        <p>A network or server error occurred while retrieving attempts.</p>
+        <button type="button" id="attemptsChartRetryBtn" class="button button-small button-secondary">Retry</button>
+      </div>
+      <div id="attemptsChartTooltip" class="chart-tooltip" hidden></div>
+    </div>
+    <div class="chart-legend">
+      <div class="legend-item"><span class="legend-dot dot-failed"></span><span>Failed attempts (rejected)</span></div>
+      <div class="legend-item"><span class="legend-dot dot-success"></span><span>Accepted logins (authenticated)</span></div>
+      <div class="legend-item"><span class="legend-stripe-sample"></span><span>Striped = Simulated Demo</span></div>
+      <div class="legend-note"><span class="status-dot"></span> Source: SQLite <code>events</code> table</div>
+    </div>
+  </article>
+
+  <!-- Secondary Chart: Risk-band distribution and heuristic signal matrix -->
+  <article class="panel chart-card" id="riskDistributionCard">
+    <div class="panel-heading">
+      <div>
+        <h2>Observed risk distribution & heuristics</h2>
+        <p>Proportional classification across all stored sessions</p>
+      </div>
+      <span class="panel-tag">SQLite Live</span>
+    </div>
+    <div class="distribution-body">
+      <div class="distribution-bar-wrap">
+        {% set total_s = summary.sessions %}
+        {% set low_pct = (summary.low_sessions * 100 / total_s)|round(1) if total_s > 0 else 0 %}
+        {% set elv_pct = (summary.elevated_sessions * 100 / total_s)|round(1) if total_s > 0 else 0 %}
+        {% set hgh_pct = (summary.high_sessions * 100 / total_s)|round(1) if total_s > 0 else 0 %}
+        <div class="distribution-bar" id="riskStackedBar">
+          <div class="dist-segment dist-low" id="distSegmentLow" style="width: {{ low_pct }}%;" title="Low risk: {{ summary.low_sessions }} ({{ low_pct }}%)">
+            <span class="dist-seg-label">{% if low_pct >= 15 %}{{ low_pct|round }}%{% endif %}</span>
+          </div>
+          <div class="dist-segment dist-elevated" id="distSegmentElevated" style="width: {{ elv_pct }}%;" title="Elevated risk: {{ summary.elevated_sessions }} ({{ elv_pct }}%)">
+            <span class="dist-seg-label">{% if elv_pct >= 15 %}{{ elv_pct|round }}%{% endif %}</span>
+          </div>
+          <div class="dist-segment dist-high" id="distSegmentHigh" style="width: {{ hgh_pct }}%;" title="High risk: {{ summary.high_sessions }} ({{ hgh_pct }}%)">
+            <span class="dist-seg-label">{% if hgh_pct >= 15 %}{{ hgh_pct|round }}%{% endif %}</span>
+          </div>
+        </div>
+        <div id="distEmptyMsg" class="distribution-empty {% if total_s > 0 %}hidden{% endif %}">
+          <span>No active sessions recorded yet · Awaiting sign-ins or simulations</span>
+        </div>
+      </div>
+      <div class="distribution-legend">
+        <div class="dist-stat">
+          <span class="dist-dot dot-low"></span>
+          <div>
+            <strong>LOW <span id="distPctLow" class="dist-pct-tag">{{ low_pct }}%</span></strong>
+            <span id="distCountLow">{{ summary.low_sessions }}</span> <small>(0–34)</small>
+          </div>
+        </div>
+        <div class="dist-stat">
+          <span class="dist-dot dot-elevated"></span>
+          <div>
+            <strong>ELEVATED <span id="distPctElevated" class="dist-pct-tag">{{ elv_pct }}%</span></strong>
+            <span id="distCountElevated">{{ summary.elevated_sessions }}</span> <small>(35–{{ threshold - 1 if threshold > 35 else 35 }})</small>
+          </div>
+        </div>
+        <div class="dist-stat">
+          <span class="dist-dot dot-high"></span>
+          <div>
+            <strong>HIGH <span id="distPctHigh" class="dist-pct-tag">{{ hgh_pct }}%</span></strong>
+            <span id="distCountHigh">{{ summary.high_sessions }}</span> <small>(≥ {{ threshold }})</small>
+          </div>
+        </div>
+      </div>
+      <div class="heuristic-chip-grid">
+        <div class="heuristic-chip">
+          <span class="chip-weight">+30</span>
+          <div><strong>Rapid failures</strong><small>3+ failures within 60s</small></div>
+        </div>
+        <div class="heuristic-chip">
+          <span class="chip-weight">+20</span>
+          <div><strong>Targeted principal</strong><small>3+ failures on single ID</small></div>
+        </div>
+        <div class="heuristic-chip">
+          <span class="chip-weight">+20</span>
+          <div><strong>Regular cadence</strong><small>Consistent automation intervals</small></div>
+        </div>
+        <div class="heuristic-chip">
+          <span class="chip-weight">+15</span>
+          <div><strong>Sustained volume</strong><small>4+ repeated attempts</small></div>
+        </div>
+      </div>
+    </div>
+  </article>
+</section>
+
+<section class="content-grid dashboard-grid">
+  <article class="panel sessions-panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Session assessments</h2>
+        <p>Current score, risk band, and explainable signals</p>
+      </div>
+      <span class="panel-tag">{{ sessions|length }} SHOWN</span>
+    </div>
+    <form class="filter-bar" method="get" action="{{ url_for('admin_dashboard') }}">
+      <label for="band-filter">Risk band</label>
+      <select id="band-filter" name="band">
+        <option value="" {% if not band_filter %}selected{% endif %}>All bands</option>
+        <option value="LOW" {% if band_filter == 'LOW' %}selected{% endif %}>Low</option>
+        <option value="ELEVATED" {% if band_filter == 'ELEVATED' %}selected{% endif %}>Elevated</option>
+        <option value="HIGH" {% if band_filter == 'HIGH' %}selected{% endif %}>High</option>
+      </select>
+      <label for="session-filter" class="filter-session-label">Session ID</label>
+      <input id="session-filter" type="search" name="session" value="{{ session_filter }}" placeholder="Search ID…" maxlength="32">
+      <button class="button button-secondary button-small" type="submit">Filter</button>
+      <a class="clear-filter" href="{{ url_for('admin_dashboard') }}">Clear</a>
+    </form>
+    {% if sessions %}
+    <div class="table-wrap">
+      <table class="data-table session-table">
+        <thead>
+          <tr>
+            <th>Session</th>
+            <th>Risk</th>
+            <th>Band</th>
+            <th>Mode</th>
+            <th>Latest evidence</th>
+            <th>Inspect</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in sessions %}
+          <tr>
+            <td>
+              <a href="{{ url_for('admin_session_investigation', session_key=item.session_key) }}" title="Open full session flight recorder">
+                <code class="session-code" title="{{ item.session_key }}">{{ item.session_key[:16] }}{% if item.session_key|length > 16 %}…{% endif %}</code>
+              </a>
+              <small class="cell-subtext">{{ item.updated_at }}</small>
+            </td>
+            <td>
+              <div class="risk-cell">
+                <strong>{{ item.risk_score }}</strong>
+                <div class="mini-score-track">
+                  <span class="risk-fill risk-{{ item.risk_band|lower }}" style="width: {{ item.risk_score }}%"></span>
+                </div>
+              </div>
+            </td>
+            <td><span class="risk-badge risk-badge-{{ item.risk_band|lower }}">{{ item.risk_band }}</span></td>
+            <td>
+              {% if item.is_simulated %}<span class="mode-badge">SIMULATED</span>{% else %}<span class="mode-badge mode-browser">BROWSER</span>{% endif %}
+              {% if item.decoy_active %}<small class="cell-subtext text-red">Decoy active</small>{% endif %}
+            </td>
+            <td>
+              <div class="reason-list">
+                {% for reason in item.reasons[:2] %}
+                <span>{{ reason }}</span>
+                {% endfor %}
+              </div>
+            </td>
+            <td>
+              <div class="action-cell-group">
+                <button type="button" class="table-action inspect-session-btn" data-session-key="{{ item.session_key }}" title="Deep dive into signals and timeline">Inspect ↗</button>
+                {% if item.decoy_active %}
+                <a class="table-action text-red" href="{{ url_for('admin_decoy', session_key=item.session_key) }}">Decoy ↗</a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <span>⌁</span>
+      <strong>No sessions match those filters</strong>
+      <p>Run a demo scenario to populate the session table with real local event data.</p>
+      <a class="button button-secondary" href="{{ url_for('admin_dashboard') }}">Clear filters</a>
+    </div>
+    {% endif %}
+    <div class="table-footnote">Risk is recalculated from recent login-failure evidence in a rolling 180-second window. The score is an interpretable heuristic, not an identity verdict.</div>
+  </article>
+
+  <article class="panel evidence-panel" id="event-stream">
+    <div class="panel-heading">
+      <div>
+        <h2>Recent event stream</h2>
+        <p>Latest 60 persisted events</p>
+      </div>
+      <span class="live-indicator"><span class="status-dot"></span> STORED</span>
+    </div>
+    {% if events %}
+    <div class="event-timeline">
+      {% for event in events[:18] %}
+      <div class="timeline-item">
+        <span class="timeline-dot {% if 'activated' in event.event_type or 'admin_resource' in event.event_type %}dot-danger{% elif 'decoy' in event.event_type %}dot-violet{% elif 'failed' in event.event_type %}dot-amber{% else %}dot-cyan{% endif %}"></span>
+        <div class="timeline-body">
+          <div class="timeline-title-row">
+            <strong>{{ event.event_type|replace('_',' ')|title }}</strong>
+            <span class="event-mode {% if event.session_key.startswith('sim-') %}event-mode-sim{% endif %}">{% if event.session_key.startswith('sim-') %}SIM{% else %}APP{% endif %}</span>
+          </div>
+          <small>{{ event.event_at }} · <a href="{{ url_for('admin_session_investigation', session_key=event.session_key) }}" title="Inspect session in flight recorder"><code>{{ event.session_key[:13] }}</code></a></small>
+          {% if event.details.get('label') %}
+          <p>{{ event.details.get('label') }}</p>
+          {% elif event.details.get('reason') %}
+          <p>{{ event.details.get('reason') }}</p>
+          {% elif event.event_type == 'login_failed' %}
+          <p>Rejected attempt · principal value not stored{% if event.interval_seconds is not none %} · {{ event.interval_seconds|round(2) }}s after previous failure{% endif %}</p>
+          {% elif event.details.get('note') %}
+          <p>{{ event.details.get('note') }}</p>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <span>◷</span>
+      <strong>Event stream is clear</strong>
+      <p>No events have been stored. Run the suspicious session scenario to see risk escalation and decoy telemetry.</p>
+    </div>
+    {% endif %}
+  </article>
+</section>
+
+<!-- Cross-Session Campaign Correlation -->
+<section class="panel campaign-panel" id="campaign-correlation" aria-label="Cross-Session Campaign Correlation">
+  <div class="panel-heading">
+    <div>
+      <div class="eyebrow"><span class="eyebrow-line"></span> THREAT INTELLIGENCE CORRELATION</div>
+      <h2>Cross-session campaign correlation</h2>
+      <p>Clusters sessions sharing targeted identity fingerprints or automated attack vectors</p>
+    </div>
+    <span class="panel-tag">{% if campaigns %}{{ campaigns|length }} ACTIVE CAMPAIGN{% if campaigns|length > 1 %}S{% endif %}{% else %}0 CORRELATED{% endif %}</span>
+  </div>
+  {% if campaigns %}
+  <div class="campaign-grid">
+    {% for camp in campaigns %}
+    <div class="campaign-card card-surface">
+      <div class="campaign-header">
+        <div>
+          <span class="status-chip status-danger">Multi-Session Incident</span>
+          <strong class="campaign-target">Target HMAC: <code>{{ camp.fingerprint[:16] }}…</code></strong>
+        </div>
+        <span class="confidence-badge">{{ camp.confidence }}</span>
+      </div>
+      <div class="campaign-metrics">
+        <div class="camp-stat"><span>Correlated Sessions:</span> <strong>{{ camp.session_count }}</strong></div>
+        <div class="camp-stat"><span>Total Attempts:</span> <strong>{{ camp.total_attempts }}</strong></div>
+        <div class="camp-stat"><span>First Seen:</span> <small>{{ camp.first_seen }}</small></div>
+        <div class="camp-stat"><span>Last Seen:</span> <small>{{ camp.last_seen }}</small></div>
+      </div>
+      <div class="campaign-sessions">
+        <span class="camp-label">Correlated Session Nodes:</span>
+        <div class="camp-node-list">
+          {% for sid in camp.session_keys %}
+          <button type="button" class="inspect-session-btn camp-node-btn" data-session-key="{{ sid }}" title="Inspect session {{ sid }}">
+            <code>{{ sid[:12] }}…</code> ↗
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <span>⌁</span>
+    <strong>No multi-session campaigns detected</strong>
+    <p>Observed sessions currently target distinct identities or single attempts. Run credential sweeps across multiple sessions to observe automated campaign clustering.</p>
+  </div>
+  {% endif %}
+</section>
+
+<section class="method-panel panel" id="methodology">
+  <div class="method-intro">
+    <div class="eyebrow"><span class="eyebrow-line"></span> TRANSPARENT BY DESIGN</div>
+    <h2>How the risk score is formed</h2>
+    <p>The score is recomputed after each event from the current rolling window. Signals can accumulate; the model does not identify a person or prove malicious intent.</p>
+  </div>
+  <div class="weight-list">
+    <div class="weight-row"><span class="weight-mark mark-amber"></span><div><strong>Rapid failures</strong><small>3+ failures within 60 seconds</small></div><b>+30</b></div>
+    <div class="weight-row"><span class="weight-mark mark-violet"></span><div><strong>Username diversity</strong><small>3+ distinct per-session fingerprints</small></div><b>+20</b></div>
+    <div class="weight-row"><span class="weight-mark mark-cyan"></span><div><strong>Regular cadence</strong><small>3+ near-identical intervals</small></div><b>+20</b></div>
+    <div class="weight-row"><span class="weight-mark mark-red"></span><div><strong>Targeted principal</strong><small>3+ failures against one target username</small></div><b>+20</b></div>
+  </div>
+  <div class="risk-scale">
+    <div class="risk-scale-heading">
+      <strong>Risk bands</strong>
+      <span>Current decoy threshold: {{ threshold }}</span>
+    </div>
+    <div class="scale-bar">
+      <span class="scale-low"></span>
+      <span class="scale-elevated"></span>
+      <span class="scale-high"></span>
+    </div>
+    <div class="scale-labels">
+      <span>LOW · 0–34</span>
+      <span>ELEVATED · 35–{{ threshold - 1 if threshold > 35 else 35 }}</span>
+      <span>HIGH · {{ threshold }}–100</span>
+    </div>
+    <p>Set <code>HONEYSHIELD_HIGH_RISK_THRESHOLD</code> before launch to adjust the high-risk threshold.</p>
+  </div>
+</section>
+
+<!-- Session Deep-Dive Investigation Modal -->
+<div class="investigation-backdrop" id="investigationBackdrop" hidden></div>
+<div class="investigation-modal" id="investigationModal" role="dialog" aria-modal="true" aria-labelledby="invModalTitle" hidden>
+  <div class="investigation-card">
+    <div class="inv-header">
+      <div class="inv-title-group">
+        <div class="eyebrow"><span class="eyebrow-line"></span> DEEP INVESTIGATION</div>
+        <h2 id="invModalTitle">Session <code id="invSessionKeyDisplay">—</code></h2>
+        <p class="lead-sm">Signal contribution weights, dynamic threshold policy, and chronological audit trail.</p>
+      </div>
+      <div class="inv-header-actions">
+        <button type="button" class="copy-value button button-small button-secondary" id="invCopySidBtn" data-copy="" aria-label="Copy session ID">Copy ID</button>
+        <button type="button" class="inv-close" id="closeInvestigationBtn" aria-label="Close investigation">×</button>
+      </div>
+    </div>
+
+    <!-- Evidence vs Derived Callout inside Modal -->
+    <div class="evidence-legend-callout">
+      <span class="legend-badge badge-evidence">RECORDED EVIDENCE</span>
+      <span>Append-only SQLite audit store records.</span>
+      <span class="legend-sep">·</span>
+      <span class="legend-badge badge-derived">CALCULATED INTERPRETATION</span>
+      <span>Assessed risk score, band, threshold, and containment decision.</span>
+    </div>
+
+    <!-- Summary KPI bar inside modal -->
+    <div class="inv-summary-bar">
+      <div class="inv-metric">
+        <span>Assessed Risk</span>
+        <div><strong id="invRiskScoreDisplay">0</strong><span class="muted">/100</span></div>
+      </div>
+      <div class="inv-metric">
+        <span>Risk Band</span>
+        <div><span class="risk-badge" id="invRiskBandBadge">LOW</span></div>
+      </div>
+      <div class="inv-metric">
+        <span>Policy Verdict</span>
+        <div><span class="mode-badge" id="invDecisionBadge">NORMAL</span></div>
+      </div>
+      <div class="inv-metric">
+        <span>Decoy State</span>
+        <div><span class="status-chip" id="invDecoyStateBadge">Inactive</span></div>
+      </div>
+      <div class="inv-metric">
+        <span>Events Count</span>
+        <div><strong id="invEventsCount">0</strong></div>
+      </div>
+    </div>
+
+    <!-- Deterministic Attack-Path Pipeline Reconstruction -->
+    <div class="inv-section-heading">
+      <h3>Deterministic Attack-Path Reconstruction</h3>
+      <span class="panel-tag">Evidence-Led Sequence</span>
+    </div>
+    <div class="attack-path-pipeline" id="invAttackPathPipeline">
+      <!-- Populated dynamically via JS from /api/session/<key> -->
+    </div>
+
+    <!-- 7 Explainable Signals Matrix -->
+    <div class="inv-section-heading">
+      <h3>Explainable heuristic signals (7 vectors)</h3>
+      <span class="panel-tag">Policy v2.0.0</span>
+    </div>
+    <div class="inv-signals-grid" id="invSignalsGrid">
+      <!-- Populated dynamically via JS from /api/session/<key> -->
+    </div>
+
+    <!-- Chronological Session Events Timeline -->
+    <div class="inv-section-heading">
+      <h3>Session event timeline</h3>
+      <span class="muted" id="invTimelineCount">0 events</span>
+    </div>
+    <div class="inv-timeline-wrap" id="invTimelineWrap">
+      <div class="event-timeline" id="invTimeline">
+        <!-- Populated dynamically via JS -->
+      </div>
+    </div>
+
+    <div class="inv-actions-footer">
+      <div class="inv-export-group">
+        <a class="button button-primary button-small" id="invExportJsonBtn" href="#" download><span>⬇</span> Export JSON</a>
+        <a class="button button-secondary button-small" id="invExportCsvBtn" href="#" download><span>⬇</span> Export CSV</a>
+      </div>
+      <div id="invDecoyActionWrap" hidden>
+        <a class="button button-danger button-small" id="invDecoyBtn" href="#"><span>⌑</span> Open Monitored Decoy Console</a>
+      </div>
+      <div class="inv-footer-right">
+        <a class="button button-quiet button-small" id="invFullPageBtn" href="#">Full Flight Recorder ↗</a>
+        <button type="button" class="button button-secondary button-small" id="closeInvBtnBottom">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

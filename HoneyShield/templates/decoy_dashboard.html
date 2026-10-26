@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% block title %}Synthetic decoy workspace{% endblock %}
+{% block content %}
+<div class="decoy-banner">
+  <span class="decoy-banner-icon">⌑</span>
+  <div>
+    <strong>Controlled decoy environment</strong>
+    <p>Everything below is synthetic. Interactions are timestamped and associated with this session for the local demonstration.</p>
+  </div>
+  <span class="panel-tag panel-tag-danger">MONITORED</span>
+</div>
+
+<div class="page-heading decoy-heading">
+  <div>
+    <div class="eyebrow"><span class="eyebrow-line"></span> SYSTEM ADMINISTRATION / OVERVIEW</div>
+    <h1>Operations <span>console</span></h1>
+    <p class="lead-sm">A plausible but fabricated administrative workspace with active canary traps.</p>
+  </div>
+  <div class="heading-actions">
+    <span class="status-chip status-danger"><span class="status-dot"></span> Decoy active</span>
+    {% if is_admin_view %}
+    <a class="button button-secondary" href="{{ url_for('admin_dashboard') }}">← Control room</a>
+    {% else %}
+    <a class="button button-secondary" href="{{ url_for('admin_dashboard') }}">Control room ↗</a>
+    <a class="button button-quiet" href="{{ url_for('logout') }}">Exit demo</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="decoy-meta-row">
+  <span>SESSION <code>{{ decoy_sid }}</code></span>
+  <span>DATA CLASSIFICATION <strong>FABRICATED / NON-SENSITIVE</strong></span>
+  <span>ENVIRONMENT <strong>LOCAL SANDBOX ONLY</strong></span>
+</div>
+
+<section class="metric-grid">
+  <article class="metric-card">
+    <div class="metric-top"><span>Open cases</span><span class="metric-icon icon-cyan">▤</span></div>
+    <div class="metric-value">248</div>
+    <div class="metric-caption">Synthetic reporting queue</div>
+  </article>
+  <article class="metric-card">
+    <div class="metric-top"><span>Review backlog</span><span class="metric-icon icon-amber">⌁</span></div>
+    <div class="metric-value">17</div>
+    <div class="metric-caption">Illustrative pending items</div>
+  </article>
+  <article class="metric-card">
+    <div class="metric-top"><span>System health</span><span class="metric-icon icon-green">◉</span></div>
+    <div class="metric-value value-text">Nominal</div>
+    <div class="metric-caption">Simulated operational status</div>
+  </article>
+  <article class="metric-card">
+    <div class="metric-top"><span>Current environment</span><span class="metric-icon icon-red">⌑</span></div>
+    <div class="metric-value value-text">Sandbox</div>
+    <div class="metric-caption">No live services connected</div>
+  </article>
+</section>
+
+<section class="content-grid two-col-grid">
+  <article class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Synthetic records & canary lures</h2>
+        <p>Interactions trigger server-side evidence recording in the HoneyShield flight recorder.</p>
+      </div>
+      <span class="panel-tag">SYNTHETIC</span>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Resource / Canary Object</th>
+            <th>Type</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>HS-2048</code></td>
+            <td>Access review</td>
+            <td><span class="table-status status-pending">Pending</span></td>
+            <td>
+              <form method="post" action="{% if is_admin_view %}{{ url_for('admin_decoy_action', session_key=decoy_sid) }}{% else %}{{ url_for('decoy_action') }}{% endif %}">
+                <input type="hidden" name="action" value="open_record">
+                <button class="table-action" type="submit">Open ↗</button>
+              </form>
+            </td>
+          </tr>
+          <tr>
+            <td><code>HS-2049</code></td>
+            <td>Usage report</td>
+            <td><span class="table-status status-ready">Ready</span></td>
+            <td>
+              <form method="post" action="{% if is_admin_view %}{{ url_for('admin_decoy_action', session_key=decoy_sid) }}{% else %}{{ url_for('decoy_action') }}{% endif %}">
+                <input type="hidden" name="action" value="open_report">
+                <button class="table-action" type="submit">Open ↗</button>
+              </form>
+            </td>
+          </tr>
+          <tr>
+            <td><code>HS-2050</code></td>
+            <td><strong>Quarterly Privilege Report</strong></td>
+            <td><span class="table-status status-review">Canary Object</span></td>
+            <td>
+              <form method="post" action="{% if is_admin_view %}{{ url_for('admin_decoy_action', session_key=decoy_sid) }}{% else %}{{ url_for('decoy_action') }}{% endif %}">
+                <input type="hidden" name="action" value="admin_resource">
+                <button class="table-action" type="submit">Inspect ↗</button>
+              </form>
+            </td>
+          </tr>
+          <tr>
+            <td><code>HS-2051</code></td>
+            <td>Audit log export</td>
+            <td><span class="table-status status-ready">Ready</span></td>
+            <td>
+              <form method="post" action="{% if is_admin_view %}{{ url_for('admin_decoy_action', session_key=decoy_sid) }}{% else %}{{ url_for('decoy_action') }}{% endif %}">
+                <input type="hidden" name="action" value="export_report">
+                <button class="table-action" type="submit">Export ↗</button>
+              </form>
+            </td>
+          </tr>
+          <tr>
+            <td><code>HS-2052</code></td>
+            <td><strong>Backup Manifest</strong></td>
+            <td><span class="table-status status-ready">Canary Object</span></td>
+            <td>
+              <form method="post" action="{% if is_admin_view %}{{ url_for('admin_decoy_action', session_key=decoy_sid) }}{% else %}{{ url_for('decoy_action') }}{% endif %}">
+                <input type="hidden" name="action" value="download_backup">
+                <button class="table-action" type="submit">Download ↗</button>
+              </form>
+            </td>
+          </tr>
+          <tr>
+            <td><code>HS-2053</code></td>
+            <td><strong>Synthetic API Inventory</strong></td>
+            <td><span class="table-status status-review">Canary Token</span></td>
+            <td>
+              <form method="post" action="{% if is_admin_view %}{{ url_for('admin_decoy_action', session_key=decoy_sid) }}{% else %}{{ url_for('decoy_action') }}{% endif %}">
+                <input type="hidden" name="action" value="view_api_key">
+                <button class="table-action" type="submit">Reveal ↗</button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="panel-note">
+      <span>i</span>
+      <p>Canary objects contain synthetic traps. Accessing them records high-fidelity attribution evidence in SQLite without exposing real credentials.</p>
+    </div>
+  </article>
+
+  <article class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Session observation trail</h2>
+        <p>Latest telemetry recorded for this decoy session</p>
+      </div>
+      <span class="panel-tag">LIVE STORE</span>
+    </div>
+    {% if events %}
+    <div class="event-timeline compact-timeline">
+      {% for event in events[:8] %}
+      <div class="timeline-item">
+        <span class="timeline-dot {% if 'activated' in event.event_type or 'admin' in event.event_type %}dot-danger{% elif 'canary' in event.event_type or 'decoy' in event.event_type %}dot-violet{% else %}dot-cyan{% endif %}"></span>
+        <div class="timeline-body">
+          <strong>{{ event.event_type|replace('_',' ')|title }}</strong>
+          <small>{{ event.event_at }} · {{ event.details.get('label', event.details.get('outcome', 'Event stored')) }}</small>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <span>⌁</span>
+      <strong>No events yet</strong>
+      <p>Choose a synthetic record to create the first interaction.</p>
+    </div>
+    {% endif %}
+    {% if is_admin_view %}
+    <a class="button button-secondary button-wide" href="{{ url_for('admin_dashboard') }}">Return to control room</a>
+    {% else %}
+    <p class="small-note">This experience is intentionally synthetic. All activities are isolated to this session.</p>
+    {% endif %}
+  </article>
+</section>
+
+<!-- Synthetic Canary Object Inspection Modal -->
+<div class="canary-modal-backdrop" id="canaryBackdrop" hidden></div>
+<div class="canary-modal" id="canaryModal" role="dialog" aria-modal="true" aria-labelledby="canaryModalTitle" hidden>
+  <div class="canary-card">
+    <div class="inv-header">
+      <div class="inv-title-group">
+        <div class="eyebrow"><span class="eyebrow-line"></span> SYNTHETIC CANARY OBJECT</div>
+        <h2 id="canaryModalTitle">Canary Detail</h2>
+      </div>
+      <button type="button" class="inv-close" id="closeCanaryBtn" aria-label="Close modal">×</button>
+    </div>
+    <div class="canary-warning-box">
+      <span class="panel-tag panel-tag-danger">NON-FUNCTIONAL LURE</span>
+      <p id="canaryWarningText">This token is synthetic, local, and intentionally non-functional. All access is logged to HoneyShield SOC.</p>
+    </div>
+    <div class="canary-token-wrap">
+      <label>Synthetic Credential / Artifact Reference</label>
+      <code id="canaryTokenValue">hs_canary_sec_prod_99a8b7c6d5e4_nonfunctional</code>
+    </div>
+    <div class="canary-meta-grid" id="canaryMetaGrid">
+      <div><span>Object ID</span><strong id="canaryObjectId">api_inventory</strong></div>
+      <div><span>Classification</span><strong id="canaryClassification">Synthetic Lure</strong></div>
+      <div><span>Audit Trail</span><strong class="text-green">✓ Persisted to SQLite</strong></div>
+    </div>
+    <div class="inv-actions-footer">
+      <span class="status-chip status-live"><span class="status-dot"></span> Evidence Captured</span>
+      <button type="button" class="button button-secondary button-small" id="closeCanaryBtnBottom">Close</button>
+    </div>
+  </div>
+</div>
+{% endblock %}

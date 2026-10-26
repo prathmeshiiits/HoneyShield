@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Secure sign in{% endblock %}
+{% block shell_class %}auth-shell{% endblock %}
+{% block content %}
+<section class="login-layout">
+  <div class="login-copy">
+    <div class="eyebrow"><span class="eyebrow-line"></span> THE HONEYPOT THAT LEARNS WHO'S LYING</div>
+    <h1>Trust the <span>behaviour.</span><br>Not just the password.</h1>
+    <p class="lead">HoneyShield observes the rhythm of a sign-in session, adapts when patterns look unusual, and quietly routes high-risk activity into a monitored decoy workspace.</p>
+    <div class="feature-points">
+      <div class="feature-point"><span class="feature-icon icon-cyan">↗</span><div><strong>Adaptive risk scoring</strong><p>Every new event can change the session's assessment.</p></div></div>
+      <div class="feature-point"><span class="feature-icon icon-violet">⌁</span><div><strong>Deception, not a dead end</strong><p>Suspicious sessions encounter synthetic records that generate useful telemetry.</p></div></div>
+      <div class="feature-point"><span class="feature-icon icon-green">◉</span><div><strong>Evidence-led visibility</strong><p>Inspect timestamps, patterns, and the reason a session was flagged.</p></div></div>
+    </div>
+    <div class="login-footnote"><span class="pulse-dot"></span> Running locally · No external systems contacted</div>
+  </div>
+  <div class="login-card-wrap">
+    <div class="login-card card-surface">
+      <div class="card-kicker">WORKSPACE ACCESS <span class="mini-pill">LOCAL DEMO</span></div>
+      <h2>Sign in to continue</h2>
+      <p class="muted">Use the demo account shown below for a normal session.</p>
+      <form method="post" action="{{ url_for('login') }}" class="login-form" autocomplete="off">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" maxlength="64" autocomplete="off" required placeholder="Enter demo username">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" maxlength="128" autocomplete="new-password" required placeholder="Enter demo password">
+        <button class="button button-primary button-wide" type="submit">Continue to workspace <span aria-hidden="true">→</span></button>
+      </form>
+      <div class="credential-box">
+        <div class="credential-heading"><span class="credential-icon">i</span><strong>Demo credentials</strong></div>
+        <div class="credential-row"><span>Username</span><code>demo</code><button type="button" class="copy-value" data-copy="demo" aria-label="Copy demo username">Copy</button></div>
+        <div class="credential-row"><span>Password</span><code>ShieldDemo!2026</code><button type="button" class="copy-value" data-copy="ShieldDemo!2026" aria-label="Copy demo password">Copy</button></div>
+        <button type="button" id="fillDemoBtn" class="button button-secondary button-wide" style="margin-top: 10px; font-size: 11px;">⚡ Auto-fill demo credentials</button>
+      </div>
+      {% if risk and risk.risk_score %}
+      <div class="risk-inline"><div><span>Current session signal</span><strong>{{ risk.risk_score }}/100 · {{ risk.risk_band }}</strong></div><div class="mini-score-track"><span class="risk-fill risk-{{ risk.risk_band|lower }}" style="width: {{ risk.risk_score }}%"></span></div></div>
+      {% endif %}
+      <p class="small-note">Passwords are checked against a hash and are never written to event records. This is a local demo, not production authentication.</p>
+    </div>
+    <div class="login-side-note"><span class="tiny-shield">⌑</span><span>Session-aware by design <strong> · Every decision has a trail</strong></span></div>
+  </div>
+</section>
+<section class="trust-strip" aria-label="System properties">
+  <div><span class="trust-symbol">01</span><strong>Observe</strong><small>Timing · failures · diversity</small></div>
+  <div><span class="trust-symbol">02</span><strong>Assess</strong><small>Interpretable 0–100 score</small></div>
+  <div><span class="trust-symbol">03</span><strong>Adapt</strong><small>Normal flow or monitored decoy</small></div>
+</section>
+{% endblock %}

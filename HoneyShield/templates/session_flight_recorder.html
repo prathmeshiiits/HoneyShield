@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% block title %}Flight recorder · {{ session.session_key[:16] }}{% endblock %}
+{% block content %}
+<div class="page-heading admin-heading">
+  <div>
+    <div class="eyebrow"><span class="eyebrow-line"></span> HONEYSHIELD / SESSION FLIGHT RECORDER</div>
+    <h1>Session <span>investigation</span></h1>
+    <p class="lead-sm">Chronological event reconstruction, signal attribution, and policy diversion evidence.</p>
+  </div>
+  <div class="heading-actions">
+    <a class="button button-secondary button-small" href="{{ url_for('admin_dashboard') }}">← Control room</a>
+    <a class="button button-primary button-small" id="exportJsonBtn" href="{{ url_for('admin_session_export', session_key=session.session_key) }}?format=json" download>
+      <span>⬇</span> Export JSON
+    </a>
+    <a class="button button-secondary button-small" id="exportCsvBtn" href="{{ url_for('admin_session_export', session_key=session.session_key) }}?format=csv" download>
+      <span>⬇</span> Export CSV
+    </a>
+    {% if session.decoy_active %}
+    <a class="button button-danger button-small" href="{{ url_for('admin_decoy', session_key=session.session_key) }}"><span>⌑</span> Decoy sandbox ↗</a>
+    {% endif %}
+  </div>
+</div>
+
+<section class="panel flight-recorder-panel" aria-label="Session Metadata">
+  <div class="panel-heading">
+    <div>
+      <h2>Session overview: <code id="sessionKeyDisplay">{{ session.session_key }}</code></h2>
+      <p>Opaque identifier · Pseudonymized HMAC principal mapping · Zero plaintext secrets stored</p>
+    </div>
+    <div class="panel-heading-right">
+      <button type="button" class="copy-value button button-small button-secondary" data-copy="{{ session.session_key }}" aria-label="Copy session ID">Copy ID</button>
+      {% if session.is_simulated %}
+      <span class="mode-badge">SIMULATED</span>
+      {% else %}
+      <span class="mode-badge mode-browser">BROWSER</span>
+      {% endif %}
+      <span class="risk-badge risk-badge-{{ session.risk_band|lower }}">{{ session.risk_band }}</span>
+    </div>
+  </div>
+
+  <div class="evidence-legend-callout">
+    <span class="legend-badge badge-evidence">RECORDED EVIDENCE</span>
+    <span>Immutable timestamps, intervals, and HMAC fingerprints from SQLite audit store.</span>
+    <span class="legend-sep">·</span>
+    <span class="legend-badge badge-derived">CALCULATED INTERPRETATION</span>
+    <span>Risk score ({{ session.risk_score }}/100), band ({{ session.risk_band }}), threshold ({{ session.threshold }}), and containment decision.</span>
+  </div>
+
+  <div class="inv-summary-bar">
+    <div class="inv-metric">
+      <span>Assessed Risk</span>
+      <div><strong>{{ session.risk_score }}</strong><span class="muted">/100</span></div>
+      <div class="mini-score-track"><span class="risk-fill risk-{{ session.risk_band|lower }}" style="width: {{ session.risk_score }}%"></span></div>
+    </div>
+    <div class="inv-metric">
+      <span>Policy Verdict</span>
+      <div><strong>{{ session.decision|upper }}</strong></div>
+      <small class="cell-subtext">Threshold: {{ session.threshold }}</small>
+    </div>
+    <div class="inv-metric">
+      <span>Decoy State</span>
+      <div>{% if session.decoy_active %}<span class="status-chip status-danger">Contained in Decoy</span>{% else %}<span class="status-chip status-safe">Normal Workspace</span>{% endif %}</div>
+      <small class="cell-subtext">Auth: {{ 'Yes' if session.authenticated else 'No' }}</small>
+    </div>
+    <div class="inv-metric">
+      <span>Session Created</span>
+      <div><small class="cell-subtext">{{ session.created_at }}</small></div>
+    </div>
+    <div class="inv-metric">
+      <span>Latest Update</span>
+      <div><small class="cell-subtext">{{ session.updated_at }}</small></div>
+    </div>
+  </div>
+
+  <!-- Deterministic Attack-Path Visualization -->
+  <div class="inv-section-heading">
+    <h3>Deterministic Attack-Path Reconstruction</h3>
+    <span class="panel-tag">Evidence-Led Sequence</span>
+  </div>
+  <div class="attack-path-pipeline" id="attackPathPipeline">
+    {% for step in session.attack_path %}
+    <div class="attack-step step-status-{{ step.status }}">
+      <div class="step-node-col">
+        <span class="step-num-circle">{{ step.step }}</span>
+        {% if not loop.last %}<div class="step-line"></div>{% endif %}
+      </div>
+      <div class="step-card card-surface">
+        <div class="step-card-top">
+          <strong class="step-title">{{ step.title }}</strong>
+          <span class="step-badge badge-{{ step.status }}">{{ step.badge }}</span>
+        </div>
+        <p class="step-desc">{{ step.description }}</p>
+        <div class="step-meta">
+          <small class="muted">Timestamp: {{ step.timestamp }}</small>
+          {% if step.event_id %}<span class="event-ref-tag">Source Event #{{ step.event_id }}</span>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Explainable Heuristic Signals Breakdown -->
+  <div class="inv-section-heading">
+    <h3>Explainable heuristic signals (7 vectors)</h3>
+    <span class="panel-tag">Policy v{{ session.policy_version }}</span>
+  </div>
+  <div class="inv-signals-grid">
+    {% for sig in session.signal_contributions %}
+    <div class="inv-signal-card {% if sig.triggered %}signal-active{% endif %}">
+      <div class="inv-signal-top">
+        <strong class="inv-signal-title">{{ sig.name }}</strong>
+        <span class="inv-signal-badge {% if sig.triggered %}badge-triggered{% else %}badge-normal{% endif %}">
+          +{{ sig.weight }} {% if sig.triggered %}TRIGGERED{% else %}NORMAL{% endif %}
+        </span>
+      </div>
+      <p class="inv-signal-desc">{{ sig.description }}</p>
+      <div class="inv-signal-evidence">
+        {% if sig.triggered %}
+        <span class="evidence-tag tag-active">Active Contribution: +{{ sig.weight }} pts</span>
+        {% else %}
+        <span class="evidence-tag tag-inactive">Within normal baseline</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Chronological Event Timeline with Expandable Details -->
+  <div class="inv-section-heading">
+    <h3>Chronological session flight recorder</h3>
+    <span class="muted">{{ session.events|length }} total events recorded</span>
+  </div>
+  <div class="flight-timeline-wrap">
+    {% if session.events %}
+    <div class="event-timeline">
+      {% for event in session.events %}
+      <div class="timeline-item">
+        <span class="timeline-dot {% if 'activated' in event.event_type or 'admin' in event.event_type %}dot-danger{% elif 'canary' in event.event_type or 'decoy' in event.event_type %}dot-violet{% elif 'failed' in event.event_type %}dot-amber{% else %}dot-cyan{% endif %}"></span>
+        <div class="timeline-body">
+          <div class="timeline-title-row">
+            <strong>{{ event.event_type|replace('_', ' ')|title }}</strong>
+            <span class="event-id-badge">#{{ event.id }}</span>
+            <span class="event-mode {% if session.is_simulated %}event-mode-sim{% endif %}">{% if session.is_simulated %}SIM{% else %}LIVE{% endif %}</span>
+          </div>
+          <small>{{ event.event_at }}{% if event.interval_seconds is not none %} · {{ event.interval_seconds|round(2) }}s after previous attempt{% endif %}</small>
+          {% if event.details.get('label') %}
+          <p>{{ event.details.get('label') }}</p>
+          {% elif event.details.get('reason') %}
+          <p>{{ event.details.get('reason') }}</p>
+          {% elif event.details.get('note') %}
+          <p>{{ event.details.get('note') }}</p>
+          {% elif event.event_type == 'login_failed' %}
+          <p>Rejected sign-in attempt · HMAC principal fingerprint: <code>{{ event.username_fingerprint[:16] }}…</code></p>
+          {% elif event.details.get('outcome') %}
+          <p>Outcome: {{ event.details.get('outcome') }}</p>
+          {% endif %}
+          
+          <!-- Expandable Technical Telemetry Details -->
+          <details class="timeline-expandable">
+            <summary class="timeline-summary-toggle">Inspect raw telemetry details</summary>
+            <div class="timeline-raw-details">
+              <div class="raw-row"><span>Event ID</span><code>{{ event.id }}</code></div>
+              <div class="raw-row"><span>Timestamp UTC</span><code>{{ event.event_at }}</code></div>
+              <div class="raw-row"><span>Interval Seconds</span><code>{{ event.interval_seconds if event.interval_seconds is not none else 'N/A (first event)' }}</code></div>
+              {% if event.username_fingerprint %}
+              <div class="raw-row"><span>HMAC Fingerprint</span><code>{{ event.username_fingerprint }}</code></div>
+              {% endif %}
+              <div class="raw-row"><span>Details Payload</span><pre><code>{{ event.details|tojson(indent=2) }}</code></pre></div>
+            </div>
+          </details>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <span>◷</span>
+      <strong>No recorded events for this session</strong>
+      <p>This session has no recorded telemetry in the SQLite database.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="table-footnote">
+    All timestamps recorded in ISO-8601 UTC. No plaintext passwords, session cookies, or filesystem secrets are logged.
+  </div>
+</section>
+{% endblock %}

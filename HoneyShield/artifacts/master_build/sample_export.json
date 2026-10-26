@@ -1,0 +1,227 @@
+{
+  "export_version": "1.0.0",
+  "exported_at": "2026-10-26T22:15:57.564+00:00",
+  "export_type": "honeyshield_session_investigation",
+  "classification": "CONFIDENTIAL / SOC INVESTIGATION EVIDENCE",
+  "privacy_notice": "Zero plaintext passwords or authentication secrets stored or exported. Usernames pseudonymized via per-session HMAC.",
+  "derived_vs_recorded": {
+    "recorded_evidence": "Immutable event timestamps, interval seconds, HMAC fingerprints, and event types from SQLite audit store.",
+    "calculated_interpretation": "Assessed risk score, risk band, policy threshold comparison, and containment decision."
+  },
+  "session_overview": {
+    "session_key": "sim-suspicious-92e51b7e232c",
+    "source_type": "Simulation",
+    "created_at": "2026-10-26T22:15:52.073+00:00",
+    "updated_at": "2026-10-26T22:15:52.090+00:00",
+    "risk_score": 70,
+    "risk_band": "HIGH",
+    "policy_threshold": 50,
+    "decision": "decoy",
+    "decoy_active": true,
+    "authenticated": false,
+    "scenario": "suspicious"
+  },
+  "explainable_signals": [
+    {
+      "signal": "rapid_failures",
+      "name": "Rapid Failures",
+      "weight": 30,
+      "triggered": true,
+      "description": "3+ failed logins within a 60-second window"
+    },
+    {
+      "signal": "repeated_principal",
+      "name": "Targeted Principal",
+      "weight": 20,
+      "triggered": false,
+      "description": "3+ failed attempts targeted at the same username"
+    },
+    {
+      "signal": "sustained_failures",
+      "name": "Sustained Failures",
+      "weight": 15,
+      "triggered": false,
+      "description": "4+ sustained failed attempts against targeted principal"
+    },
+    {
+      "signal": "persistent_volume",
+      "name": "Exhaustive Guessing",
+      "weight": 15,
+      "triggered": false,
+      "description": "5+ persistent authentication failures against target"
+    },
+    {
+      "signal": "username_diversity",
+      "name": "Username Diversity",
+      "weight": 20,
+      "triggered": true,
+      "description": "3+ distinct username fingerprints (credential spraying)"
+    },
+    {
+      "signal": "regular_cadence",
+      "name": "Automation Cadence",
+      "weight": 20,
+      "triggered": true,
+      "description": "Near-identical request intervals consistent with scripted bot"
+    },
+    {
+      "signal": "gradual_backoff",
+      "name": "Gradual Backoff",
+      "weight": 10,
+      "triggered": false,
+      "description": "Exponential retry backoff pattern attempting stealth evasion"
+    }
+  ],
+  "attack_path": [
+    {
+      "step": 1,
+      "title": "Initial Sign-In Attempt",
+      "status": "info",
+      "badge": "INGRESS",
+      "timestamp": "2026-10-26T22:15:48.056+00:00",
+      "description": "Session established from simulation generator.",
+      "event_id": 427
+    },
+    {
+      "step": 2,
+      "title": "Authentication Pattern (5 failures)",
+      "status": "danger",
+      "badge": "RETRY BURST",
+      "timestamp": "2026-10-26T22:15:51.276+00:00",
+      "description": "5 failed sign-in attempts recorded with shortest interval 0.79s.",
+      "event_id": 432
+    },
+    {
+      "step": 3,
+      "title": "Risk Engine Evaluation (70/100 \u00b7 HIGH)",
+      "status": "danger",
+      "badge": "HIGH RISK",
+      "timestamp": "2026-10-26T22:15:52.090+00:00",
+      "description": "Score 70/100 assessed against policy threshold 50. Triggered signals: Rapid Failures, Username Diversity, Automation Cadence.",
+      "event_id": null
+    },
+    {
+      "step": 4,
+      "title": "Decoy Sandbox Diversion",
+      "status": "danger",
+      "badge": "CONTAINED",
+      "timestamp": "2026-10-26T22:15:49.666+00:00",
+      "description": "Policy threshold exceeded. Session silently isolated into monitored synthetic decoy environment.",
+      "event_id": 430
+    },
+    {
+      "step": 5,
+      "title": "Decoy Telemetry Monitoring",
+      "status": "warning",
+      "badge": "ACTIVE TRAP",
+      "timestamp": "2026-10-26T22:15:52.090+00:00",
+      "description": "Decoy environment active. Awaiting adversary interaction with bait files.",
+      "event_id": null
+    }
+  ],
+  "events_count": 9,
+  "recorded_events": [
+    {
+      "id": 427,
+      "event_at": "2026-10-26T22:15:48.056+00:00",
+      "event_type": "login_failed",
+      "interval_seconds": null,
+      "username_fingerprint": "5c02ba79635700aa8a32481b",
+      "details": {
+        "source": "simulator",
+        "attempt": 1
+      }
+    },
+    {
+      "id": 428,
+      "event_at": "2026-10-26T22:15:48.876+00:00",
+      "event_type": "login_failed",
+      "interval_seconds": 0.820927,
+      "username_fingerprint": "267cb91175acffd9e0551750",
+      "details": {
+        "source": "simulator",
+        "attempt": 2
+      }
+    },
+    {
+      "id": 429,
+      "event_at": "2026-10-26T22:15:49.666+00:00",
+      "event_type": "login_failed",
+      "interval_seconds": 0.790927,
+      "username_fingerprint": "82752bb18c94672ee100662c",
+      "details": {
+        "source": "simulator",
+        "attempt": 3
+      }
+    },
+    {
+      "id": 430,
+      "event_at": "2026-10-26T22:15:49.666+00:00",
+      "event_type": "decoy_activated",
+      "interval_seconds": null,
+      "username_fingerprint": null,
+      "details": {
+        "reason": "Behavioural score reached the configured high-risk threshold",
+        "score": 50
+      }
+    },
+    {
+      "id": 431,
+      "event_at": "2026-10-26T22:15:50.476+00:00",
+      "event_type": "login_failed",
+      "interval_seconds": 0.810927,
+      "username_fingerprint": "3075c620f086b262a80bddff",
+      "details": {
+        "source": "simulator",
+        "attempt": 4
+      }
+    },
+    {
+      "id": 432,
+      "event_at": "2026-10-26T22:15:51.276+00:00",
+      "event_type": "login_failed",
+      "interval_seconds": 0.800927,
+      "username_fingerprint": "db91f950baff3124f1a96325",
+      "details": {
+        "source": "simulator",
+        "attempt": 5
+      }
+    },
+    {
+      "id": 433,
+      "event_at": "2026-10-26T22:15:52.086+00:00",
+      "event_type": "decoy_record_opened",
+      "interval_seconds": null,
+      "username_fingerprint": null,
+      "details": {
+        "action": "open_record",
+        "label": "Opened synthetic customer record",
+        "source": "simulator"
+      }
+    },
+    {
+      "id": 434,
+      "event_at": "2026-10-26T22:15:52.088+00:00",
+      "event_type": "decoy_report_opened",
+      "interval_seconds": null,
+      "username_fingerprint": null,
+      "details": {
+        "action": "open_report",
+        "label": "Opened synthetic activity report",
+        "source": "simulator"
+      }
+    },
+    {
+      "id": 435,
+      "event_at": "2026-10-26T22:15:52.090+00:00",
+      "event_type": "decoy_admin_resource_attempted",
+      "interval_seconds": null,
+      "username_fingerprint": null,
+      "details": {
+        "action": "admin_resource",
+        "label": "Attempted a synthetic admin resource",
+        "source": "simulator"
+      }
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1020">
+  <title>{% block title %}HoneyShield{% endblock %} · HoneyShield</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <div class="top-strip"><span>LOCAL SECURITY LAB</span><span>Behaviour-led deception · Synthetic data only</span></div>
+  <header class="site-header">
+    <div class="header-brand-group">
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open navigation menu" aria-controls="navDrawer" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <a class="brand" href="{{ url_for('landing') }}" aria-label="HoneyShield home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="brand-copy"><strong>HONEY<span>SHIELD</span></strong><small>Adaptive deception layer</small></span>
+      </a>
+    </div>
+    <nav class="header-nav" aria-label="Main navigation">
+      <a href="{{ url_for('landing') }}" {% if request.endpoint == 'landing' %}aria-current="page"{% endif %}>Home</a>
+      {% if is_authenticated %}
+        <a href="{{ url_for('user_dashboard') }}" {% if request.endpoint == 'user_dashboard' %}aria-current="page"{% endif %}>My Workspace</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" {% if request.endpoint == 'login' %}aria-current="page"{% endif %}>Sign In</a>
+      {% endif %}
+      <a href="{{ url_for('admin_dashboard') }}" {% if request.endpoint in ('admin_dashboard', 'admin_decoy') %}aria-current="page"{% endif %}>Control Room</a>
+      <a href="{{ url_for('scenario_lab') }}" {% if request.endpoint == 'scenario_lab' %}aria-current="page"{% endif %}>Scenario Lab</a>
+      {% if is_authenticated %}
+        <a class="nav-logout" href="{{ url_for('logout') }}">Sign Out</a>
+      {% elif request.endpoint == 'decoy' %}
+        <a class="nav-logout" href="{{ url_for('logout') }}">Exit Decoy</a>
+      {% endif %}
+    </nav>
+  </header>
+  <div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
+  <aside class="nav-drawer" id="navDrawer" aria-hidden="true" hidden>
+    <div class="drawer-heading"><div><span class="drawer-eyebrow">NAVIGATION</span><strong>Explore HoneyShield</strong></div><button class="drawer-close" id="drawerClose" type="button" aria-label="Close navigation menu">×</button></div>
+    <nav class="drawer-links" aria-label="Product sections">
+      <a href="{{ url_for('landing') }}"><span class="drawer-link-icon">⌂</span><span><strong>Product Home</strong><small>Platform overview & features</small></span></a>
+      {% if is_authenticated %}
+        <a href="{{ url_for('user_dashboard') }}"><span class="drawer-link-icon">▤</span><span><strong>My Workspace</strong><small>Synthetic normal-user dashboard</small></span></a>
+      {% else %}
+        <a href="{{ url_for('login') }}"><span class="drawer-link-icon">↗</span><span><strong>Sign In</strong><small>Workspace authentication</small></span></a>
+      {% endif %}
+      <a href="{{ url_for('admin_dashboard') }}"><span class="drawer-link-icon">⚡</span><span><strong>Control Room</strong><small>Security overview and live metrics</small></span></a>
+      <a href="{{ url_for('scenario_lab') }}"><span class="drawer-link-icon">⚗</span><span><strong>Scenario Lab</strong><small>Deterministic benchmark & what-if policy analyzer</small></span></a>
+      {% if is_authenticated %}
+        <a href="{{ url_for('logout') }}"><span class="drawer-link-icon">⎋</span><span><strong>Sign Out</strong><small>End authenticated session</small></span></a>
+      {% endif %}
+      <a href="{{ url_for('admin_dashboard') }}#scenario-console"><span class="drawer-link-icon">⚑</span><span><strong>Run demo scenarios</strong><small>Generate normal and suspicious sessions</small></span></a>
+      <a href="{{ url_for('admin_dashboard') }}#event-stream"><span class="drawer-link-icon">◷</span><span><strong>Event stream</strong><small>Inspect stored session evidence</small></span></a>
+      <a href="{{ url_for('admin_dashboard') }}#methodology"><span class="drawer-link-icon">⌁</span><span><strong>Risk methodology</strong><small>See the heuristic and score bands</small></span></a>
+    </nav>
+    <div class="drawer-footnote"><span class="drawer-footnote-dot"></span><p><strong>Decoy console</strong><br>Available after a session crosses the high-risk threshold.</p></div>
+  </aside>
+  <main id="main-content" class="page-shell {% block shell_class %}{% endblock %}">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}<div class="flash-stack" role="status" aria-live="polite">
+        {% for category, message in messages %}<div class="flash flash-{{ category }}"><span>{{ message }}</span><button type="button" class="flash-close" aria-label="Dismiss message">×</button></div>{% endfor %}
+      </div>{% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  {% if request.endpoint == 'login' %}
+  <div class="demo-modal-backdrop" id="demoDisclosure" role="dialog" aria-modal="true" aria-labelledby="demoDisclosureTitle" aria-describedby="demoDisclosureText" hidden>
+    <div class="demo-modal-card">
+      <button class="modal-close" id="demoDisclosureClose" type="button" aria-label="Close disclosure">×</button>
+      <div class="modal-brand-mark" aria-hidden="true">H</div>
+      <div class="eyebrow"><span class="eyebrow-line"></span> BEFORE YOU CONTINUE</div>
+      <h2 id="demoDisclosureTitle">Local prototype disclosure</h2>
+      <p id="demoDisclosureText">HoneyShield runs its Flask app, behavioural scoring, and SQLite event store on this computer. The normal workspace and decoy records are synthetic. The scenario buttons generate illustrative events through the local backend; no external systems are contacted.</p>
+      <div class="disclosure-points"><div><span>✓</span><p><strong>Password-safe event records</strong><br>Submitted passwords are verified against a stored hash and are not written to event records.</p></div><div><span>⌁</span><p><strong>Heuristic, not a verdict</strong><br>Risk scores explain behaviour patterns; they do not prove identity or intent.</p></div></div>
+      <button class="button button-primary button-wide" id="demoDisclosureContinue" type="button">Continue to HoneyShield <span aria-hidden="true">→</span></button>
+    </div>
+  </div>
+  {% endif %}
+  <footer class="site-footer">
+    <div><span class="footer-mark">H</span><span>HoneyShield <span class="muted">· local proof of concept</span></span></div>
+    <p>Scores are heuristic indicators, not proof of identity or intent. Synthetic records only.</p>
+  </footer>
+</body>
+</html>

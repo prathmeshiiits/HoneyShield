@@ -1,0 +1,422 @@
+{% extends "base.html" %}
+{% block title %}Scenario Lab & Evaluation{% endblock %}
+{% block shell_class %}lab-shell{% endblock %}
+
+{% block content %}
+<div class="lab-container">
+  <!-- Top Bar / Navigation Header -->
+  <div class="lab-header">
+    <div class="lab-header-left">
+      <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+        <a href="{{ url_for('admin_dashboard') }}">Control room</a>
+        <span class="bc-sep">/</span>
+        <span class="bc-current">Scenario Lab & Policy Benchmark</span>
+      </nav>
+      <div class="eyebrow"><span class="eyebrow-line"></span> DETERMINISTIC EVALUATION & BENCHMARK LAB</div>
+      <h1 class="page-title">Scenario Lab &amp; Policy Benchmark</h1>
+      <p class="lead-sm">Controlled local test environment. Execute deterministic user patterns, evaluate detection &amp; false-positive metrics, and test what-if threshold adjustments on copies of session evidence without modifying active configuration.</p>
+    </div>
+    <div class="lab-header-actions">
+      <div class="threshold-pill" title="Active High-Risk Policy Threshold">
+        <span class="pill-dot"></span>
+        <span>Active threshold: <strong>{{ threshold }}/100</strong></span>
+      </div>
+      <a href="{{ url_for('admin_dashboard') }}" class="button button-secondary">Control room ↗</a>
+      <form method="post" action="{{ url_for('reset_lab') }}" data-confirm="Reset lab-isolated simulation sessions and benchmark history? Live demo state is preserved.">
+        <button type="submit" class="button button-quiet" title="Clear isolated lab sessions">Reset lab runs</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SECTION 1: SCENARIO SELECTOR CARDS -->
+  <section class="lab-section" aria-labelledby="secScenariosTitle">
+    <div class="section-title-bar">
+      <div>
+        <div class="eyebrow"><span class="eyebrow-line"></span> TEST CASE SELECTOR</div>
+        <h2 id="secScenariosTitle">Deterministic Simulation Scenarios</h2>
+      </div>
+      <p class="section-desc">Each scenario generates explicit, timestamped events through the same backend risk engine and SQLite event store used by live login. Zero hardcoded scores.</p>
+    </div>
+
+    <div class="scenario-grid">
+      <!-- 1. Normal User -->
+      <article class="scenario-card card-benign">
+        <div class="sc-top">
+          <span class="badge badge-green">BENIGN</span>
+          <span class="expected-tag">Expected: <strong>ALLOW</strong></span>
+        </div>
+        <h3>Normal Successful User</h3>
+        <p class="sc-desc">Legitimate enterprise user entering valid credentials on first attempt without anomalous delays or retries.</p>
+        <div class="sc-metrics">
+          <span>Expected score: <strong>0 / LOW</strong></span>
+          <span>Decoy: <strong>No</strong></span>
+        </div>
+        <div class="sc-signals">
+          <span class="chip chip-gray">clean_session</span>
+        </div>
+        <form method="post" action="{{ url_for('simulate_lab', scenario='normal_user') }}" class="sc-form">
+          <label class="isolate-label">
+            <input type="checkbox" name="add_to_demo_activity" value="1">
+            <span>Add to Control Room activity</span>
+          </label>
+          <button type="submit" class="button button-primary button-block">Run Scenario ⚡</button>
+        </form>
+      </article>
+
+      <!-- 2. Forgetful User -->
+      <article class="scenario-card card-benign">
+        <div class="sc-top">
+          <span class="badge badge-green">BENIGN</span>
+          <span class="expected-tag">Expected: <strong>ALLOW</strong></span>
+        </div>
+        <h3>Forgetful User (Typo &amp; Pause)</h3>
+        <p class="sc-desc">Plausible human typo on attempt 1, followed by a 20-second pause to recall password, then successful login.</p>
+        <div class="sc-metrics">
+          <span>Expected score: <strong>0 / LOW</strong></span>
+          <span>Decoy: <strong>No</strong></span>
+        </div>
+        <div class="sc-signals">
+          <span class="chip chip-cyan">recovery_pause (20s)</span>
+        </div>
+        <form method="post" action="{{ url_for('simulate_lab', scenario='forgetful_user') }}" class="sc-form">
+          <label class="isolate-label">
+            <input type="checkbox" name="add_to_demo_activity" value="1">
+            <span>Add to Control Room activity</span>
+          </label>
+          <button type="submit" class="button button-primary button-block">Run Scenario ⚡</button>
+        </form>
+      </article>
+
+      <!-- 3. Rapid Repeated Failures -->
+      <article class="scenario-card card-malicious">
+        <div class="sc-top">
+          <span class="badge badge-red">MALICIOUS</span>
+          <span class="expected-tag tag-contain">Expected: <strong>CONTAIN</strong></span>
+        </div>
+        <h3>Rapid Repeated Failures</h3>
+        <p class="sc-desc">High-velocity brute-force attack submitting 3 rapid failed attempts against the same targeted account within 5 seconds.</p>
+        <div class="sc-metrics">
+          <span>Expected score: <strong>50 / HIGH</strong></span>
+          <span>Decoy: <strong>Yes (Diverted)</strong></span>
+        </div>
+        <div class="sc-signals">
+          <span class="chip chip-amber">rapid_failures (+30)</span>
+          <span class="chip chip-red">targeted_principal (+20)</span>
+        </div>
+        <form method="post" action="{{ url_for('simulate_lab', scenario='rapid_failures') }}" class="sc-form">
+          <label class="isolate-label">
+            <input type="checkbox" name="add_to_demo_activity" value="1">
+            <span>Add to Control Room activity</span>
+          </label>
+          <button type="submit" class="button button-danger button-block">Run Scenario ⚡</button>
+        </form>
+      </article>
+
+      <!-- 4. Regular Cadence -->
+      <article class="scenario-card card-malicious">
+        <div class="sc-top">
+          <span class="badge badge-red">MALICIOUS</span>
+          <span class="expected-tag tag-contain">Expected: <strong>CONTAIN</strong></span>
+        </div>
+        <h3>Regular-Cadence Scripted Attempts</h3>
+        <p class="sc-desc">Automated script firing 4 failed attempts at periodic 2.0-second intervals exhibiting robotic timing regularity (CV &le; 0.05).</p>
+        <div class="sc-metrics">
+          <span>Expected score: <strong>85 / HIGH</strong></span>
+          <span>Decoy: <strong>Yes (Diverted)</strong></span>
+        </div>
+        <div class="sc-signals">
+          <span class="chip chip-cyan">regular_cadence (+20)</span>
+          <span class="chip chip-amber">rapid_failures (+30)</span>
+          <span class="chip chip-purple">sustained_vol (+15)</span>
+        </div>
+        <form method="post" action="{{ url_for('simulate_lab', scenario='regular_cadence') }}" class="sc-form">
+          <label class="isolate-label">
+            <input type="checkbox" name="add_to_demo_activity" value="1">
+            <span>Add to Control Room activity</span>
+          </label>
+          <button type="submit" class="button button-danger button-block">Run Scenario ⚡</button>
+        </form>
+      </article>
+
+      <!-- 5. Credential Sweep -->
+      <article class="scenario-card card-malicious">
+        <div class="sc-top">
+          <span class="badge badge-red">MALICIOUS</span>
+          <span class="expected-tag tag-contain">Expected: <strong>CONTAIN</strong></span>
+        </div>
+        <h3>Username Sweep (Spraying)</h3>
+        <p class="sc-desc">Spraying attempts rotating through 4 distinct corporate account names within 60s to evade per-account lockouts.</p>
+        <div class="sc-metrics">
+          <span>Expected score: <strong>50 / HIGH</strong></span>
+          <span>Decoy: <strong>Yes (Diverted)</strong></span>
+        </div>
+        <div class="sc-signals">
+          <span class="chip chip-purple">username_diversity (+20)</span>
+          <span class="chip chip-amber">rapid_failures (+30)</span>
+        </div>
+        <form method="post" action="{{ url_for('simulate_lab', scenario='credential_sweep') }}" class="sc-form">
+          <label class="isolate-label">
+            <input type="checkbox" name="add_to_demo_activity" value="1">
+            <span>Add to Control Room activity</span>
+          </label>
+          <button type="submit" class="button button-danger button-block">Run Scenario ⚡</button>
+        </form>
+      </article>
+
+      <!-- 6. Policy Boundary -->
+      <article class="scenario-card card-boundary">
+        <div class="sc-top">
+          <span class="badge badge-amber">BOUNDARY</span>
+          <span class="expected-tag">Threshold: <strong>{{ threshold }}</strong></span>
+        </div>
+        <h3>Policy Boundary Selector</h3>
+        <p class="sc-desc">Deterministic boundary verification. Test policy transitions immediately below, exactly at, and above the configured threshold.</p>
+        <div class="boundary-actions">
+          <form method="post" action="{{ url_for('simulate_lab', scenario='boundary_below') }}" class="boundary-subform">
+            <button type="submit" class="button button-small button-quiet" title="2 failed attempts (Score 0, LOW)">Below (2 att) · Score 0</button>
+          </form>
+          <form method="post" action="{{ url_for('simulate_lab', scenario='boundary_at') }}" class="boundary-subform">
+            <button type="submit" class="button button-small button-secondary" title="3 failed attempts (Score 50, HIGH)">At (3 att) · Score 50</button>
+          </form>
+          <form method="post" action="{{ url_for('simulate_lab', scenario='boundary_above') }}" class="boundary-subform">
+            <button type="submit" class="button button-small button-danger" title="4 failed attempts (Score 65, HIGH)">Above (4 att) · Score 65</button>
+          </form>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- SECTION 2: DETERMINISTIC BENCHMARK & EVALUATION MATRIX -->
+  <section class="lab-section panel" aria-labelledby="secBenchmarkTitle">
+    <div class="benchmark-header">
+      <div>
+        <div class="eyebrow"><span class="eyebrow-line"></span> RIGOROUS LOCAL EVALUATION</div>
+        <h2 id="secBenchmarkTitle">Deterministic Policy Benchmark Suite</h2>
+        <p class="section-desc">Evaluates all 8 canonical test patterns against the active threshold policy. Computes raw confusion counts, true positive containment rate, and false positive challenge rate from actual labeled runs.</p>
+      </div>
+      <form method="post" action="{{ url_for('run_benchmark') }}">
+        <button type="submit" class="button button-primary">
+          <span>⚙</span> Run Full Benchmark Suite (8 Cases)
+        </button>
+      </form>
+    </div>
+
+    {% if benchmark %}
+    <!-- Raw Counts & KPI Strip -->
+    <div class="benchmark-kpi-grid">
+      <div class="bench-kpi-card">
+        <span class="kpi-label">Sample Size (N)</span>
+        <strong class="kpi-num">{{ benchmark.total_cases }}</strong>
+        <small class="kpi-sub">Deterministic test runs</small>
+      </div>
+      <div class="bench-kpi-card">
+        <span class="kpi-label">True Positives (TP)</span>
+        <strong class="kpi-num text-green">{{ benchmark.true_positives }}</strong>
+        <small class="kpi-sub">Attacks safely contained</small>
+      </div>
+      <div class="bench-kpi-card">
+        <span class="kpi-label">True Negatives (TN)</span>
+        <strong class="kpi-num text-cyan">{{ benchmark.true_negatives }}</strong>
+        <small class="kpi-sub">Benign users allowed</small>
+      </div>
+      <div class="bench-kpi-card">
+        <span class="kpi-label">False Positives (FP)</span>
+        <strong class="kpi-num {% if benchmark.false_positives > 0 %}text-red{% else %}text-muted{% endif %}">{{ benchmark.false_positives }}</strong>
+        <small class="kpi-sub">Legitimate challenged</small>
+      </div>
+      <div class="bench-kpi-card">
+        <span class="kpi-label">False Negatives (FN)</span>
+        <strong class="kpi-num {% if benchmark.false_negatives > 0 %}text-red{% else %}text-muted{% endif %}">{{ benchmark.false_negatives }}</strong>
+        <small class="kpi-sub">Attacks uncontained</small>
+      </div>
+      <div class="bench-kpi-card highlight-card">
+        <span class="kpi-label">Containment Rate (TPR)</span>
+        <strong class="kpi-num text-cyan">{{ benchmark.containment_rate }}%</strong>
+        <small class="kpi-sub">Formula: TP / (TP + FN)</small>
+      </div>
+      <div class="bench-kpi-card highlight-card">
+        <span class="kpi-label">False Positive Rate (FPR)</span>
+        <strong class="kpi-num text-green">{{ benchmark.false_positive_rate }}%</strong>
+        <small class="kpi-sub">Formula: FP / (FP + TN)</small>
+      </div>
+    </div>
+
+    <!-- Transparency & Honesty Disclaimer -->
+    <div class="benchmark-notice">
+      <span class="notice-icon">ℹ</span>
+      <div class="notice-body">
+        <strong>Benchmark Methodology &amp; Evaluation Transparency</strong>
+        <p>Metrics are calculated strictly across the <strong>{{ benchmark.total_cases }} deterministic test cases</strong> under active policy threshold <strong>{{ benchmark.threshold }}/100</strong>. Figures demonstrate rule adherence and repeatable policy enforcement against known benchmark patterns. HoneyShield does not present synthetic benchmark metrics as universal real-world accuracy claims.</p>
+      </div>
+    </div>
+
+    <!-- Per-Scenario Audit Table -->
+    <div class="benchmark-table-wrapper">
+      <table class="benchmark-table" aria-label="Detailed scenario evaluation matrix">
+        <thead>
+          <tr>
+            <th scope="col">Test Case</th>
+            <th scope="col">Ground Truth</th>
+            <th scope="col">Session Key</th>
+            <th scope="col">Events</th>
+            <th scope="col">Assessed Score</th>
+            <th scope="col">Band</th>
+            <th scope="col">Decision</th>
+            <th scope="col">Class</th>
+            <th scope="col">Audit Status</th>
+            <th scope="col">Investigation</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in benchmark.results %}
+          <tr>
+            <td>
+              <strong>{{ row.title }}</strong><br>
+              <small class="muted">{{ row.scenario }}</small>
+            </td>
+            <td>
+              <span class="badge {% if row.ground_truth == 'CONTAIN' %}badge-red{% else %}badge-green{% endif %}">{{ row.ground_truth }}</span>
+            </td>
+            <td>
+              <code class="session-code" title="{{ row.session_key }}">{{ row.session_key[:18] }}…</code>
+            </td>
+            <td>{{ row.events_count }}</td>
+            <td>
+              <strong>{{ row.score }}</strong><span class="muted">/100</span>
+            </td>
+            <td>
+              <span class="band-tag band-{{ row.band|lower }}">{{ row.band }}</span>
+            </td>
+            <td>
+              <strong class="{% if row.actual_verdict == 'CONTAIN' %}text-red{% else %}text-green{% endif %}">{{ row.actual_verdict }}</strong>
+            </td>
+            <td>
+              <span class="class-badge class-{{ row.classification|lower }}">{{ row.classification }}</span>
+            </td>
+            <td>
+              {% if row.passed %}
+                <span class="status-pass">✔ PASS</span>
+              {% else %}
+                <span class="status-fail">✘ FAIL</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{{ url_for('session_flight_recorder', session_key=row.session_key) }}" class="button button-small button-quiet" title="Open session flight recorder audit trail">
+                Flight Recorder ↗
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% else %}
+    <div class="empty-benchmark">
+      <span class="empty-icon">⚗</span>
+      <strong>Benchmark suite has not been executed yet in this session</strong>
+      <p>Click "Run Full Benchmark Suite" above to evaluate all 8 deterministic test patterns against the active threshold policy in under 2 seconds.</p>
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- SECTION 3: INTERACTIVE WHAT-IF THRESHOLD CONTROL -->
+  <section class="lab-section panel whatif-section" id="whatif-panel" aria-labelledby="secWhatIfTitle">
+    <div class="whatif-header">
+      <div>
+        <div class="eyebrow"><span class="eyebrow-line"></span> EVIDENCE HYPOTHETICAL TESTING</div>
+        <h2 id="secWhatIfTitle">What-If Policy Threshold Analyzer</h2>
+        <p class="section-desc">Evaluates an immutable copy of recorded session failure evidence against candidate high-risk thresholds. Tests policy sensitivity without modifying active system configuration or historical decisions.</p>
+      </div>
+      <div class="whatif-guarantee">
+        <span class="badge badge-cyan">🔒 Non-Mutating Copy</span>
+        <small class="muted">Database &amp; active config 100% immutable</small>
+      </div>
+    </div>
+
+    <!-- Session Selector and Controls -->
+    <div class="whatif-controls-bar">
+      <div class="whatif-field">
+        <label for="whatifSessionSelect">Select Session Evidence to Evaluate:</label>
+        <select id="whatifSessionSelect" class="whatif-select">
+          {% for s in recent_sessions %}
+            <option value="{{ s.session_key }}" {% if selected_session and selected_session.session_key == s.session_key %}selected{% endif %}>
+              {{ s.session_key[:22] }}… (Score: {{ s.risk_score }}, Band: {{ s.risk_band }}, {{ 'Decoy' if s.decoy_active else 'Normal' }})
+            </option>
+          {% else %}
+            <option value="">Run a scenario above first</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="whatif-slider-group">
+        <div class="slider-header">
+          <label for="whatifSlider">Hypothetical Threshold: <strong id="sliderValueText" class="text-cyan">{{ threshold }}</strong> / 100</label>
+          <span class="slider-note">Range: 20 to 90</span>
+        </div>
+        <input type="range" id="whatifSlider" min="20" max="90" value="{{ threshold }}" step="1" class="whatif-slider" aria-label="Hypothetical threshold slider">
+        <div class="slider-ticks">
+          <span>20</span>
+          <span>35 (Elevated)</span>
+          <span class="text-cyan">50 (Active Default)</span>
+          <span>65 (Strict)</span>
+          <span>80</span>
+          <span>90</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side-by-Side Comparison Grid -->
+    <div class="whatif-comparison-grid">
+      <!-- Active Policy State -->
+      <article class="whatif-card card-active">
+        <div class="card-eyebrow">ACTIVE SYSTEM POLICY (RECORDED)</div>
+        <div class="card-threshold">Threshold: <strong>{{ threshold }} / 100</strong></div>
+        <div class="whatif-stat-row">
+          <span>Assessed Risk Score:</span>
+          <strong id="activeScoreVal">{% if selected_session %}{{ selected_session.risk_score }}{% else %}—{% endif %}</strong>
+        </div>
+        <div class="whatif-stat-row">
+          <span>Assessed Risk Band:</span>
+          <strong id="activeBandVal">{% if selected_session %}{{ selected_session.risk_band }}{% else %}—{% endif %}</strong>
+        </div>
+        <div class="whatif-stat-row">
+          <span>Enforced Decision:</span>
+          <strong id="activeDecisionVal" class="{% if selected_session and selected_session.decoy_active %}text-red{% else %}text-green{% endif %}">
+            {% if selected_session %}{{ 'CONTAIN (Decoy)' if selected_session.decoy_active else 'ALLOW (Normal)' }}{% else %}—{% endif %}
+          </strong>
+        </div>
+      </article>
+
+      <!-- Candidate Policy State -->
+      <article class="whatif-card card-hypothetical">
+        <div class="card-eyebrow">HYPOTHETICAL CANDIDATE POLICY</div>
+        <div class="card-threshold">Threshold: <strong id="whatifThresholdVal" class="text-cyan">{{ threshold }} / 100</strong></div>
+        <div class="whatif-stat-row">
+          <span>Hypothetical Risk Score:</span>
+          <strong id="whatifScoreVal" class="text-cyan">{% if selected_session %}{{ selected_session.risk_score }}{% else %}—{% endif %}</strong>
+        </div>
+        <div class="whatif-stat-row">
+          <span>Hypothetical Risk Band:</span>
+          <strong id="whatifBandVal" class="text-cyan">{% if selected_session %}{{ selected_session.risk_band }}{% else %}—{% endif %}</strong>
+        </div>
+        <div class="whatif-stat-row">
+          <span>Hypothetical Decision:</span>
+          <strong id="whatifDecisionVal" class="{% if selected_session and selected_session.decoy_active %}text-red{% else %}text-green{% endif %}">
+            {% if selected_session %}{{ 'CONTAIN (Decoy)' if selected_session.decoy_active else 'ALLOW (Normal)' }}{% else %}—{% endif %}
+          </strong>
+        </div>
+      </article>
+    </div>
+
+    <!-- Live Impact Callout -->
+    <div class="whatif-impact-banner" id="whatifImpactBanner">
+      <span class="impact-icon">⚖</span>
+      <div class="impact-content">
+        <strong>Policy Sensitivity &amp; Impact Analysis</strong>
+        <p id="whatifImpactText">Adjust the slider above or select another session to observe how different policy thresholds would alter containment decisions on copies of real failure evidence.</p>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

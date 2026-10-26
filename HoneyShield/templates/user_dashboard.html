@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Workspace overview{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><div class="eyebrow"><span class="eyebrow-line"></span> USER WORKSPACE</div><h1>Welcome back, <span>{{ demo_username }}</span></h1><p class="lead-sm">A synthetic account overview for the normal sign-in path.</p></div>
+  <div class="heading-actions"><span class="status-chip status-safe"><span class="status-dot"></span> Session accepted</span><a class="button button-secondary" href="{{ url_for('admin_dashboard') }}">Open control room <span>↗</span></a><a class="button button-quiet" href="{{ url_for('logout') }}">Sign out</a></div>
+</div>
+<div class="notice notice-safe"><span class="notice-icon">✓</span><div><strong>Normal session experience</strong><p>This workspace contains fabricated demo records only. HoneyShield records sign-in outcomes and behavioural metadata, not the password you entered.</p></div></div>
+<section class="metric-grid user-metrics">
+  <article class="metric-card"><div class="metric-top"><span>Workspace status</span><span class="metric-icon icon-green">◉</span></div><div class="metric-value value-text">Operational</div><div class="metric-caption"><span class="text-green">●</span> Synthetic demo environment</div></article>
+  <article class="metric-card"><div class="metric-top"><span>Projects</span><span class="metric-icon icon-cyan">▤</span></div><div class="metric-value">04</div><div class="metric-caption">Illustrative workspace entries</div></article>
+  <article class="metric-card"><div class="metric-top"><span>Recent activity</span><span class="metric-icon icon-violet">↗</span></div><div class="metric-value">12</div><div class="metric-caption">Synthetic events this period</div></article>
+  <article class="metric-card"><div class="metric-top"><span>Access posture</span><span class="metric-icon icon-green">⌑</span></div><div class="metric-value value-text">Standard</div><div class="metric-caption">No elevated pattern in this path</div></article>
+</section>
+<section class="content-grid two-col-grid">
+  <article class="panel">
+    <div class="panel-heading"><div><h2>Recent workspace activity</h2><p>Illustrative records · not connected to any real account</p></div><span class="panel-tag">SAMPLE</span></div>
+    <div class="activity-list">
+      <div class="activity-row"><span class="activity-mark mark-cyan">↗</span><div><strong>Project brief updated</strong><small>Workspace / Northstar Portal</small></div><time>09:42</time></div>
+      <div class="activity-row"><span class="activity-mark mark-violet">▤</span><div><strong>Monthly summary generated</strong><small>Reports / Usage Overview</small></div><time>Yesterday</time></div>
+      <div class="activity-row"><span class="activity-mark mark-green">✓</span><div><strong>Access review completed</strong><small>Security / Account Review</small></div><time>Oct 24</time></div>
+      <div class="activity-row"><span class="activity-mark mark-amber">⌁</span><div><strong>Workspace preference saved</strong><small>Settings / Display</small></div><time>Oct 22</time></div>
+    </div>
+  </article>
+  <article class="panel posture-panel">
+    <div class="panel-heading"><div><h2>Access overview</h2><p>Demo-only summary of workspace components</p></div></div>
+    <div class="posture-line"><div><span>Profile service</span><strong>Available</strong></div><span class="tiny-state state-green"></span></div>
+    <div class="posture-line"><div><span>Report service</span><strong>Available</strong></div><span class="tiny-state state-green"></span></div>
+    <div class="posture-line"><div><span>Admin tools</span><strong>Restricted view</strong></div><span class="tiny-state state-amber"></span></div>
+    <div class="panel-note"><span>i</span><p>Switch to the control room to run a suspicious or normal scenario and inspect the event evidence.</p></div>
+    <a class="button button-primary button-wide" href="{{ url_for('admin_dashboard') }}">Explore the security control room <span>→</span></a>
+  </article>
+</section>
+{% endblock %}
