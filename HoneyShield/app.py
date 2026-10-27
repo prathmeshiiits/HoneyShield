@@ -1985,17 +1985,20 @@ def run_demo_scenario(scenario: str, isolate: bool = False, run_id: str | None =
 
 
 def main() -> int:
+    is_cloud = "PORT" in os.environ or "RENDER" in os.environ or "RAILWAY_ENVIRONMENT" in os.environ
+    raw_port = os.environ.get("PORT") or os.environ.get("HONEYSHIELD_PORT") or "5000"
     try:
-        port = int(os.environ.get("HONEYSHIELD_PORT", "5000"))
+        port = int(raw_port)
     except ValueError:
-        print("HONEYSHIELD_PORT must be a valid integer (for example, 5000).", file=sys.stderr)
+        print("Port must be a valid integer (for example, 5000).", file=sys.stderr)
         return 2
-    host = os.environ.get("HONEYSHIELD_HOST", "127.0.0.1")
+    default_host = "0.0.0.0" if is_cloud else "127.0.0.1"
+    host = os.environ.get("HONEYSHIELD_HOST", default_host)
     if not 1 <= port <= 65535:
-        print("HONEYSHIELD_PORT must be between 1 and 65535.", file=sys.stderr)
+        print("Port must be between 1 and 65535.", file=sys.stderr)
         return 2
-    if host not in {"127.0.0.1", "localhost", "::1"}:
-        print("For safety, HoneyShield only binds to loopback by default; use 127.0.0.1, localhost, or ::1.", file=sys.stderr)
+    if host not in {"127.0.0.1", "localhost", "::1", "0.0.0.0"}:
+        print("HoneyShield host must be 127.0.0.1, localhost, ::1, or 0.0.0.0.", file=sys.stderr)
         return 2
     app = create_app()
     probe_host = "127.0.0.1" if host == "localhost" else host
@@ -2005,16 +2008,15 @@ def main() -> int:
     except OSError as exc:
         if exc.errno in {98, 48, 10048, 10013}:
             print(
-                f"Port {port} is unavailable. Close the other local server or set HONEYSHIELD_PORT to another port, e.g. 5001.",
+                f"Port {port} is unavailable. Close the other server or set PORT to another port, e.g. 5001.",
                 file=sys.stderr,
             )
             return 1
         print(f"Could not bind to {probe_host}:{port}: {exc}", file=sys.stderr)
         return 1
-    url_host = "[::1]" if probe_host == "::1" else "127.0.0.1"
-    print("\nHoneyShield local development server")
-    print(f"Open this URL in your browser: http://{url_host}:{port}")
-    print("Local-only demonstration. Do not expose this development server to a network.")
+    url_host = "[::1]" if probe_host == "::1" else ("0.0.0.0" if probe_host == "0.0.0.0" else "127.0.0.1")
+    print("\nHoneyShield server")
+    print(f"Listening on: http://{url_host}:{port}")
     print("Press Ctrl+C to stop.\n", flush=True)
     try:
         app.run(host=probe_host, port=port, debug=False, use_reloader=False)
