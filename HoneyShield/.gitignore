@@ -6,8 +6,7 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 
-# Runtime SQLite data (created automatically)
-data/*.sqlite3
+# Runtime SQLite WAL/SHM locks
 data/*.sqlite3-shm
 data/*.sqlite3-wal
 

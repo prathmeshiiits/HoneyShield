@@ -202,6 +202,45 @@ def init_database(app: Flask) -> None:
         )
         conn.commit()
 
+        # Fallback auto-seed: If running in production (not testing) and sessions table is empty,
+        # restore historical baseline data so the Control Room always remembers full history on Render.
+        if not app.config.get("TESTING", False):
+            try:
+                sessions_count = conn.execute("SELECT COUNT(*) FROM sessions WHERE is_isolated = 0").fetchone()[0]
+                if sessions_count == 0:
+                    seed_file = ROOT_DIR / "data" / "baseline_seed.sqlite3"
+                    if seed_file.exists():
+                        with sqlite3.connect(str(seed_file)) as seed_conn:
+                            seed_conn.row_factory = sqlite3.Row
+                            seed_sessions = seed_conn.execute("SELECT * FROM sessions WHERE is_isolated = 0").fetchall()
+                            seed_events = seed_conn.execute("SELECT * FROM events WHERE is_isolated = 0").fetchall()
+                            for s in seed_sessions:
+                                conn.execute(
+                                    """INSERT OR IGNORE INTO sessions
+                                       (session_key, created_at, updated_at, risk_score, risk_band, decoy_active,
+                                        is_simulated, authenticated, scenario, risk_reasons, is_isolated)
+                                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                                    (
+                                        s["session_key"], s["created_at"], s["updated_at"], s["risk_score"], s["risk_band"],
+                                        s["decoy_active"], s["is_simulated"], s["authenticated"], s["scenario"],
+                                        s["risk_reasons"], s["is_isolated"]
+                                    ),
+                                )
+                            for e in seed_events:
+                                conn.execute(
+                                    """INSERT INTO events
+                                       (session_key, event_at, event_type, interval_seconds,
+                                        username_fingerprint, details_json, is_isolated)
+                                       VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                                    (
+                                        e["session_key"], e["event_at"], e["event_type"], e["interval_seconds"],
+                                        e["username_fingerprint"], e["details_json"], e["is_isolated"]
+                                    ),
+                                )
+                            conn.commit()
+            except Exception:
+                pass
+
 
 def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     app = Flask(__name__, instance_relative_config=False)
