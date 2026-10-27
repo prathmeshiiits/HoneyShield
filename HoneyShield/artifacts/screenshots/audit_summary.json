@@ -1,0 +1,467 @@
+{
+  "viewports": {},
+  "typography_samples": {
+    "landing@desktop_1440x900": {
+      "hero_heading": {
+        "fontSize": "56px",
+        "lineHeight": "62.72px",
+        "fontWeight": "800"
+      },
+      "h2_heading": {
+        "fontSize": "36px",
+        "lineHeight": "55.8px",
+        "fontWeight": "700"
+      },
+      "card_body": {
+        "fontSize": "14px",
+        "lineHeight": "21.7px",
+        "fontWeight": "400"
+      },
+      "eyebrow_tag": {
+        "fontSize": "11px",
+        "lineHeight": "17.05px",
+        "fontWeight": "750"
+      },
+      "nav_link": {
+        "fontSize": "13px",
+        "lineHeight": "20.15px",
+        "fontWeight": "600"
+      },
+      "evidence_item": {
+        "fontSize": "13px",
+        "lineHeight": "20.15px",
+        "fontWeight": "400"
+      },
+      "button_text": {
+        "fontSize": "14px",
+        "lineHeight": "17.5px",
+        "fontWeight": "600"
+      }
+    },
+    "login@desktop_1440x900": {
+      "hero_heading": {
+        "fontSize": "62px",
+        "lineHeight": "68.2px",
+        "fontWeight": "760"
+      },
+      "h2_heading": {
+        "fontSize": "24px",
+        "lineHeight": "37.2px",
+        "fontWeight": "700"
+      },
+      "eyebrow_tag": {
+        "fontSize": "11px",
+        "lineHeight": "17.05px",
+        "fontWeight": "750"
+      },
+      "nav_link": {
+        "fontSize": "13px",
+        "lineHeight": "20.15px",
+        "fontWeight": "600"
+      },
+      "button_text": {
+        "fontSize": "12.5px",
+        "lineHeight": "15.625px",
+        "fontWeight": "650"
+      }
+    },
+    "user_dashboard@desktop_1440x900": {
+      "hero_heading": {
+        "fontSize": "38px",
+        "lineHeight": "43.7px",
+        "fontWeight": "700"
+      },
+      "h2_heading": {
+        "fontSize": "17px",
+        "lineHeight": "26.35px",
+        "fontWeight": "700"
+      },
+      "eyebrow_tag": {
+        "fontSize": "11px",
+        "lineHeight": "17.05px",
+        "fontWeight": "750"
+      },
+      "nav_link": {
+        "fontSize": "13px",
+        "lineHeight": "20.15px",
+        "fontWeight": "600"
+      },
+      "metric_value": {
+        "fontSize": "24px",
+        "lineHeight": "26.88px",
+        "fontWeight": "760"
+      },
+      "metric_label": {
+        "fontSize": "12.5px",
+        "lineHeight": "19.375px",
+        "fontWeight": "650"
+      },
+      "metric_caption": {
+        "fontSize": "12px",
+        "lineHeight": "16.8px",
+        "fontWeight": "400"
+      },
+      "button_text": {
+        "fontSize": "12.5px",
+        "lineHeight": "15.625px",
+        "fontWeight": "650"
+      }
+    },
+    "control_room@desktop_1440x900": {
+      "hero_heading": {
+        "fontSize": "38px",
+        "lineHeight": "43.7px",
+        "fontWeight": "700"
+      },
+      "h2_heading": {
+        "fontSize": "17px",
+        "lineHeight": "26.35px",
+        "fontWeight": "700"
+      },
+      "eyebrow_tag": {
+        "fontSize": "11px",
+        "lineHeight": "17.05px",
+        "fontWeight": "750"
+      },
+      "nav_link": {
+        "fontSize": "13px",
+        "lineHeight": "20.15px",
+        "fontWeight": "600"
+      },
+      "metric_value": {
+        "fontSize": "34px",
+        "lineHeight": "38.08px",
+        "fontWeight": "760"
+      },
+      "metric_label": {
+        "fontSize": "12.5px",
+        "lineHeight": "19.375px",
+        "fontWeight": "650"
+      },
+      "metric_caption": {
+        "fontSize": "12px",
+        "lineHeight": "16.8px",
+        "fontWeight": "400"
+      },
+      "table_th": {
+        "fontSize": "11px",
+        "lineHeight": "17.05px",
+        "fontWeight": "750"
+      },
+      "table_td": {
+        "fontSize": "13px",
+        "lineHeight": "19.5px",
+        "fontWeight": "400"
+      },
+      "timeline_text": {
+        "fontSize": "12px",
+        "lineHeight": "18.6px",
+        "fontWeight": "400"
+      },
+      "chart_axis_text": {
+        "fontSize": "11px",
+        "lineHeight": "17.05px",
+        "fontWeight": "400"
+      },
+      "dist_segment_label": {
+        "fontSize": "11px",
+        "lineHeight": "17.05px",
+        "fontWeight": "800"
+      },
+      "filter_label": {
+        "fontSize": "13px",
+        "lineHeight": "20.15px",
+        "fontWeight": "650"
+      },
+      "filter_select": {
+        "fontSize": "13px",
+        "lineHeight": "normal",
+        "fontWeight": "400"
+      },
+      "button_text": {
+        "fontSize": "12px",
+        "lineHeight": "15px",
+        "fontWeight": "650"
+      }
+    },
+    "scenario_lab@desktop_1440x900": {
+      "hero_heading": {
+        "fontSize": "32px",
+        "lineHeight": "normal",
+        "fontWeight": "700"
+      }
+    },
+    "landing@mobile_390x844": {
+      "hero_heading": {
+        "fontSize": "34px",
+        "lineHeight": "38.08px",
+        "fontWeight": "800"
+      },
+      "h2_heading": {
+        "fontSize": "24px",
+        "lineHeight": "37.2px",
+        "fontWeight": "700"
+      },
+      "card_body": {
+        "fontSize": "14px",
+        "lineHeight": "21.7px",
+        "fontWeight": "400"
+      },
+      "eyebrow_tag": {
+        "fontSize": "10.5px",
+        "lineHeight": "16.275px",
+        "fontWeight": "750"
+      },
+      "nav_link": {
+        "fontSize": "11px",
+        "lineHeight": "17.05px",
+        "fontWeight": "600"
+      },
+      "evidence_item": {
+        "fontSize": "13px",
+        "lineHeight": "20.15px",
+        "fontWeight": "400"
+      },
+      "button_text": {
+        "fontSize": "14px",
+        "lineHeight": "17.5px",
+        "fontWeight": "600"
+      }
+    },
+    "login@mobile_390x844": {
+      "hero_heading": {
+        "fontSize": "38px",
+        "lineHeight": "41.8px",
+        "fontWeight": "760"
+      },
+      "h2_heading": {
+        "fontSize": "24px",
+        "lineHeight": "37.2px",
+        "fontWeight": "700"
+      },
+      "eyebrow_tag": {
+        "fontSize": "10.5px",
+        "lineHeight": "16.275px",
+        "fontWeight": "750"
+      },
+      "nav_link": {
+        "fontSize": "11px",
+        "lineHeight": "17.05px",
+        "fontWeight": "600"
+      },
+      "button_text": {
+        "fontSize": "12.5px",
+        "lineHeight": "15.625px",
+        "fontWeight": "650"
+      }
+    },
+    "user_dashboard@mobile_390x844": {
+      "hero_heading": {
+        "fontSize": "28px",
+        "lineHeight": "32.2px",
+        "fontWeight": "700"
+      },
+      "h2_heading": {
+        "fontSize": "17px",
+        "lineHeight": "26.35px",
+        "fontWeight": "700"
+      },
+      "eyebrow_tag": {
+        "fontSize": "10.5px",
+        "lineHeight": "16.275px",
+        "fontWeight": "750"
+      },
+      "nav_link": {
+        "fontSize": "11px",
+        "lineHeight": "17.05px",
+        "fontWeight": "600"
+      },
+      "metric_value": {
+        "fontSize": "20px",
+        "lineHeight": "22.4px",
+        "fontWeight": "760"
+      },
+      "metric_label": {
+        "fontSize": "12.5px",
+        "lineHeight": "19.375px",
+        "fontWeight": "650"
+      },
+      "metric_caption": {
+        "fontSize": "11px",
+        "lineHeight": "15.4px",
+        "fontWeight": "400"
+      },
+      "button_text": {
+        "fontSize": "12.5px",
+        "lineHeight": "15.625px",
+        "fontWeight": "650"
+      }
+    },
+    "control_room@mobile_390x844": {
+      "hero_heading": {
+        "fontSize": "28px",
+        "lineHeight": "32.2px",
+        "fontWeight": "700"
+      },
+      "h2_heading": {
+        "fontSize": "17px",
+        "lineHeight": "26.35px",
+        "fontWeight": "700"
+      },
+      "eyebrow_tag": {
+        "fontSize": "10.5px",
+        "lineHeight": "16.275px",
+        "fontWeight": "750"
+      },
+      "nav_link": {
+        "fontSize": "11px",
+        "lineHeight": "17.05px",
+        "fontWeight": "600"
+      },
+      "metric_value": {
+        "fontSize": "29px",
+        "lineHeight": "32.48px",
+        "fontWeight": "760"
+      },
+      "metric_label": {
+        "fontSize": "12.5px",
+        "lineHeight": "19.375px",
+        "fontWeight": "650"
+      },
+      "metric_caption": {
+        "fontSize": "11px",
+        "lineHeight": "15.4px",
+        "fontWeight": "400"
+      },
+      "table_th": {
+        "fontSize": "11px",
+        "lineHeight": "17.05px",
+        "fontWeight": "750"
+      },
+      "table_td": {
+        "fontSize": "13px",
+        "lineHeight": "19.5px",
+        "fontWeight": "400"
+      },
+      "timeline_text": {
+        "fontSize": "12px",
+        "lineHeight": "18.6px",
+        "fontWeight": "400"
+      },
+      "chart_axis_text": {
+        "fontSize": "11px",
+        "lineHeight": "17.05px",
+        "fontWeight": "400"
+      },
+      "dist_segment_label": {
+        "fontSize": "11px",
+        "lineHeight": "17.05px",
+        "fontWeight": "800"
+      },
+      "filter_label": {
+        "fontSize": "13px",
+        "lineHeight": "20.15px",
+        "fontWeight": "650"
+      },
+      "filter_select": {
+        "fontSize": "13px",
+        "lineHeight": "normal",
+        "fontWeight": "400"
+      },
+      "button_text": {
+        "fontSize": "12px",
+        "lineHeight": "15px",
+        "fontWeight": "650"
+      }
+    },
+    "scenario_lab@mobile_390x844": {
+      "hero_heading": {
+        "fontSize": "32px",
+        "lineHeight": "normal",
+        "fontWeight": "700"
+      }
+    }
+  },
+  "overflow_checks": {
+    "landing@desktop_1440x900": {
+      "clientWidth": 1440,
+      "scrollWidth": 1440,
+      "hasHorizontalOverflow": false,
+      "overflowingCardsCount": 0,
+      "overflowingCards": [],
+      "screenshot": "c:\\Users\\DELL\\Downloads\\HoneyShield\\HoneyShield\\artifacts\\screenshots\\landing_desktop_1440x900.png"
+    },
+    "login@desktop_1440x900": {
+      "clientWidth": 1440,
+      "scrollWidth": 1440,
+      "hasHorizontalOverflow": false,
+      "overflowingCardsCount": 0,
+      "overflowingCards": [],
+      "screenshot": "c:\\Users\\DELL\\Downloads\\HoneyShield\\HoneyShield\\artifacts\\screenshots\\login_desktop_1440x900.png"
+    },
+    "user_dashboard@desktop_1440x900": {
+      "clientWidth": 1440,
+      "scrollWidth": 1440,
+      "hasHorizontalOverflow": false,
+      "overflowingCardsCount": 0,
+      "overflowingCards": [],
+      "screenshot": "c:\\Users\\DELL\\Downloads\\HoneyShield\\HoneyShield\\artifacts\\screenshots\\user_dashboard_desktop_1440x900.png"
+    },
+    "control_room@desktop_1440x900": {
+      "clientWidth": 1440,
+      "scrollWidth": 1440,
+      "hasHorizontalOverflow": false,
+      "overflowingCardsCount": 0,
+      "overflowingCards": [],
+      "screenshot": "c:\\Users\\DELL\\Downloads\\HoneyShield\\HoneyShield\\artifacts\\screenshots\\control_room_desktop_1440x900.png"
+    },
+    "scenario_lab@desktop_1440x900": {
+      "clientWidth": 1440,
+      "scrollWidth": 1440,
+      "hasHorizontalOverflow": false,
+      "overflowingCardsCount": 0,
+      "overflowingCards": [],
+      "screenshot": "c:\\Users\\DELL\\Downloads\\HoneyShield\\HoneyShield\\artifacts\\screenshots\\scenario_lab_desktop_1440x900.png"
+    },
+    "landing@mobile_390x844": {
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "hasHorizontalOverflow": false,
+      "overflowingCardsCount": 0,
+      "overflowingCards": [],
+      "screenshot": "c:\\Users\\DELL\\Downloads\\HoneyShield\\HoneyShield\\artifacts\\screenshots\\landing_mobile_390x844.png"
+    },
+    "login@mobile_390x844": {
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "hasHorizontalOverflow": false,
+      "overflowingCardsCount": 0,
+      "overflowingCards": [],
+      "screenshot": "c:\\Users\\DELL\\Downloads\\HoneyShield\\HoneyShield\\artifacts\\screenshots\\login_mobile_390x844.png"
+    },
+    "user_dashboard@mobile_390x844": {
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "hasHorizontalOverflow": false,
+      "overflowingCardsCount": 0,
+      "overflowingCards": [],
+      "screenshot": "c:\\Users\\DELL\\Downloads\\HoneyShield\\HoneyShield\\artifacts\\screenshots\\user_dashboard_mobile_390x844.png"
+    },
+    "control_room@mobile_390x844": {
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "hasHorizontalOverflow": false,
+      "overflowingCardsCount": 0,
+      "overflowingCards": [],
+      "screenshot": "c:\\Users\\DELL\\Downloads\\HoneyShield\\HoneyShield\\artifacts\\screenshots\\control_room_mobile_390x844.png"
+    },
+    "scenario_lab@mobile_390x844": {
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "hasHorizontalOverflow": false,
+      "overflowingCardsCount": 0,
+      "overflowingCards": [],
+      "screenshot": "c:\\Users\\DELL\\Downloads\\HoneyShield\\HoneyShield\\artifacts\\screenshots\\scenario_lab_mobile_390x844.png"
+    }
+  }
+}
