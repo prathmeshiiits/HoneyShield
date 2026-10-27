@@ -240,6 +240,37 @@ def init_database(app: Flask) -> None:
                             conn.commit()
             except Exception:
                 pass
+def get_correlated_campaigns(conn_c: sqlite3.Connection, include_isolated: bool = False) -> list[dict[str, Any]]:
+    """Identify multi-session attack campaigns sharing targeted principals or attack patterns."""
+    try:
+        iso_clause = "" if include_isolated else "AND is_isolated = 0"
+        rows_c = conn_c.execute(f"""
+            SELECT username_fingerprint, COUNT(DISTINCT session_key) as session_count,
+                   GROUP_CONCAT(DISTINCT session_key) as session_keys,
+                   MIN(event_at) as first_seen, MAX(event_at) as last_seen,
+                   COUNT(*) as total_attempts
+            FROM events
+            WHERE username_fingerprint IS NOT NULL AND username_fingerprint != '' {iso_clause}
+            GROUP BY username_fingerprint
+            HAVING session_count >= 2
+            ORDER BY session_count DESC, total_attempts DESC
+            LIMIT 10
+        """).fetchall()
+        campaign_list = []
+        for rc in rows_c:
+            s_keys = [k.strip() for k in rc["session_keys"].split(",") if k.strip()]
+            campaign_list.append({
+                "fingerprint": rc["username_fingerprint"],
+                "session_count": rc["session_count"],
+                "session_keys": s_keys,
+                "first_seen": rc["first_seen"],
+                "last_seen": rc["last_seen"],
+                "total_attempts": rc["total_attempts"],
+                "confidence": "HIGH (Identical HMAC target fingerprint across sessions)",
+            })
+        return campaign_list
+    except Exception:
+        return []
 
 
 def create_app(test_config: dict[str, Any] | None = None) -> Flask:
@@ -300,10 +331,11 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             session["hs_sid"] = sid
         return str(sid)
 
-    def fingerprint_username(sid: str, username: str) -> str:
-        # Per-session keyed fingerprint: username is never stored in the event stream.
-        key = (str(app.config["SECRET_KEY"]) + ":" + sid).encode("utf-8")
-        message = username.strip().casefold().encode("utf-8", errors="replace")
+    def fingerprint_username(sid: str = "", username: str = "") -> str:
+        # Cross-session keyed HMAC fingerprint: plaintext username is never stored.
+        # Keyed with SECRET_KEY so identical targeted principals match across sessions.
+        key = str(app.config["SECRET_KEY"]).encode("utf-8")
+        message = (username or "").strip().casefold().encode("utf-8", errors="replace")
         return hmac.new(key, message, hashlib.sha256).hexdigest()[:24]
 
     def ensure_session(
@@ -619,6 +651,23 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             if state.get("decoy_active"):
                 for action in ("open_record", "open_report", "admin_resource"):
                     record_decoy_action(sid, action, simulated=True, is_isolated=isolate)
+
+            # Generate coordinated companion spray session targeting shared enterprise accounts
+            coord_sid = f"{sid}-coord"
+            ensure_session(conn, coord_sid, is_simulated=True, scenario="credential_sweep", is_isolated=isolate)
+            coord_base = current + timedelta(seconds=1.5)
+            for c_idx, c_principal in enumerate(["admin@internal.corp", "service@internal.corp"]):
+                c_time = coord_base + timedelta(seconds=(c_idx * 1.8))
+                record_event(
+                    coord_sid,
+                    "login_failed",
+                    details={"source": "simulator", "attempt": c_idx + 1, "pattern": "credential_sweep_coord", "target": c_principal.split('@')[0]},
+                    username_fingerprint=fingerprint_username(coord_sid, c_principal),
+                    event_at=c_time,
+                    is_simulated=True,
+                    scenario=scenario,
+                    is_isolated=isolate,
+                )
 
         elif scenario == "boundary_below":
             base = utc_now() - timedelta(seconds=3)
@@ -1364,37 +1413,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             limit=60,
         )
 
-        def get_correlated_campaigns(conn_c: sqlite3.Connection) -> list[dict[str, Any]]:
-            """Identify multi-session attack campaigns sharing targeted principals or attack patterns."""
-            try:
-                rows_c = conn_c.execute("""
-                    SELECT username_fingerprint, COUNT(DISTINCT session_key) as session_count,
-                           GROUP_CONCAT(DISTINCT session_key) as session_keys,
-                           MIN(event_at) as first_seen, MAX(event_at) as last_seen,
-                           COUNT(*) as total_attempts
-                    FROM events
-                    WHERE is_isolated = 0 AND username_fingerprint IS NOT NULL AND username_fingerprint != ''
-                    GROUP BY username_fingerprint
-                    HAVING session_count >= 2
-                    ORDER BY session_count DESC, total_attempts DESC
-                    LIMIT 5
-                """).fetchall()
-                campaign_list = []
-                for rc in rows_c:
-                    s_keys = [k.strip() for k in rc["session_keys"].split(",") if k.strip()]
-                    campaign_list.append({
-                        "fingerprint": rc["username_fingerprint"],
-                        "session_count": rc["session_count"],
-                        "session_keys": s_keys,
-                        "first_seen": rc["first_seen"],
-                        "last_seen": rc["last_seen"],
-                        "total_attempts": rc["total_attempts"],
-                        "confidence": "HIGH (Identical HMAC target fingerprint across sessions)",
-                    })
-                return campaign_list
-            except Exception:
-                return []
-
         summary = get_metrics_summary(
             conn,
             band=band_filter,
@@ -1412,7 +1430,10 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             risk_dist = {k: (risk_dist[k] if k == band_filter else 0) for k in risk_dist}
 
         attempts = get_attempts_over_time(conn, window_seconds=window_seconds, source=source_filter)
-        campaigns = get_correlated_campaigns(conn)
+        campaigns = get_correlated_campaigns(conn, include_isolated=False)
+        if not campaigns:
+            campaigns = get_correlated_campaigns(conn, include_isolated=True)
+        correlated_sessions_count = len(set(s for c in campaigns for s in c.get("session_keys", [])))
         return render_template(
             "admin_dashboard.html",
             sessions=sessions,
@@ -1421,6 +1442,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             risk_dist=risk_dist,
             attempts=attempts,
             campaigns=campaigns,
+            correlated_sessions_count=correlated_sessions_count,
             band_filter=band_filter,
             session_filter=session_filter,
             source_filter=source_filter,
@@ -2006,6 +2028,21 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             "total_attempts": sum(b.get("total", b.get("failed", 0) + b.get("success", 0)) for b in buckets),
             "total_failed": sum(b.get("failed", 0) for b in buckets),
             "total_success": sum(b.get("success", 0) for b in buckets),
+        })
+
+    @app.get("/api/campaigns")
+    def api_campaigns():
+        conn = get_db()
+        include_isolated = request.args.get("include_isolated", "").lower() in ("1", "true", "yes")
+        campaigns = get_correlated_campaigns(conn, include_isolated=include_isolated)
+        if not campaigns and not include_isolated:
+            campaigns = get_correlated_campaigns(conn, include_isolated=True)
+        correlated_sessions = set(s for c in campaigns for s in c.get("session_keys", []))
+        return jsonify({
+            "status": "ok",
+            "campaign_count": len(campaigns),
+            "correlated_sessions_count": len(correlated_sessions),
+            "campaigns": campaigns,
         })
 
     app.run_demo_scenario = run_demo_scenario

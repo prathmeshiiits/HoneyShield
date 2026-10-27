@@ -401,7 +401,7 @@
       <h2>Cross-session campaign correlation</h2>
       <p>Clusters sessions sharing targeted identity fingerprints or automated attack vectors</p>
     </div>
-    <span class="panel-tag">{% if campaigns %}{{ campaigns|length }} ACTIVE CAMPAIGN{% if campaigns|length > 1 %}S{% endif %}{% else %}0 CORRELATED{% endif %}</span>
+    <span class="panel-tag" id="campaign-badge">{% if campaigns %}{{ campaigns|length }} ACTIVE CAMPAIGN{% if campaigns|length > 1 %}S{% endif %}{% if correlated_sessions_count %} ({{ correlated_sessions_count }} SESSIONS){% endif %}{% else %}0 CORRELATED{% endif %}</span>
   </div>
   {% if campaigns %}
   <div class="campaign-grid">
